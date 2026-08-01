@@ -1,1027 +1,1024 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ShieldCheck, 
   Lock, 
   Eye, 
   Award, 
-  AlertTriangle, 
   CheckCircle2, 
   Zap, 
   Users, 
   FileText, 
-  Globe2, 
+  Globe, 
   ArrowRight, 
   Sparkles, 
   Activity, 
   BarChart3, 
-  Shield,
-  Clock,
-  UserCheck,
-  Check,
-  Play,
-  RotateCcw,
-  Camera,
-  Monitor,
-  Cpu,
-  FileCheck2,
-  ChevronDown,
-  HelpCircle,
-  TrendingUp,
-  Sliders,
-  Maximize2,
-  RefreshCw,
-  XCircle,
-  UserX,
-  Building2,
-  GraduationCap
+  Clock, 
+  UserCheck, 
+  Check, 
+  Play, 
+  Server, 
+  Database, 
+  Layers, 
+  Code2, 
+  Boxes, 
+  Mail, 
+  ChevronRight, 
+  CheckCircle, 
+  Key, 
+  ShieldAlert, 
+  HardDrive, 
+  Cloud, 
+  X
 } from 'lucide-react';
+
+// Custom SVG Icons
+const GithubIcon = ({ className = "w-4 h-4" }) => (
+  <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
+  </svg>
+);
+
+const LinkedinIcon = ({ className = "w-4 h-4" }) => (
+  <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
+  </svg>
+);
 
 const LandingPage = () => {
   const navigate = useNavigate();
-  const [activeRoleTab, setActiveRoleTab] = useState('student');
-  
-  // Interactive Live Sandbox States
-  const [sandboxTrustScore, setSandboxTrustScore] = useState(98);
-  const [activeViolationType, setActiveViolationType] = useState('none');
-  const [tabSwitchCount, setTabSwitchCount] = useState(0);
-  const [faceDetected, setFaceDetected] = useState(true);
-  const [secondMonitorDetected, setSecondMonitorDetected] = useState(false);
-  const [isAutoSubmitted, setIsAutoSubmitted] = useState(false);
-  const [sandboxLogs, setSandboxLogs] = useState([
-    { id: 1, type: 'success', text: 'Biometric webcam verification passed. (Confidence: 99.4%)', time: '10:00:02 AM' },
-    { id: 2, type: 'info', text: 'Secure session locked. Browser tab monitoring initialized.', time: '10:00:00 AM' }
-  ]);
 
-  // Live Proctor Grid State (Interactive Admin Room)
-  const [proctorStudents, setProctorStudents] = useState([
-    { id: 'ST-8091', name: 'Alex Chen', exam: 'CS301: Algorithms', trustScore: 98, status: 'Active', violations: 0, avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80' },
-    { id: 'ST-4412', name: 'Sarah Jenkins', exam: 'CS301: Algorithms', trustScore: 62, status: 'Warning', violations: 2, avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80' },
-    { id: 'ST-9923', name: 'Marcus Vance', exam: 'CS301: Algorithms', trustScore: 100, status: 'Active', violations: 0, avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80' },
-    { id: 'ST-1104', name: 'Elena Rostova', exam: 'CS301: Algorithms', trustScore: 25, status: 'Suspended', violations: 4, avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&auto=format&fit=crop&q=80' }
-  ]);
+  // Laptop Screen Tab Switcher
+  const [activeMockupTab, setActiveMockupTab] = useState('admin');
 
-  // ROI Calculator State
-  const [studentCount, setStudentCount] = useState(250);
-  const [examsPerMonth, setExamsPerMonth] = useState(4);
+  // Interactive Live Demo Modal State
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
+  const [demoSelectedAnswer, setDemoSelectedAnswer] = useState(null);
+  const [demoSubmitted, setDemoSubmitted] = useState(false);
 
-  // FAQ Accordion State
-  const [openFaq, setOpenFaq] = useState(0);
-
-  // Trigger Sandbox Violations
-  const triggerViolation = (type) => {
-    if (isAutoSubmitted) return;
-    const timeStr = new Date().toLocaleTimeString();
-
-    if (type === 'tab') {
-      const count = tabSwitchCount + 1;
-      setTabSwitchCount(count);
-      const newScore = Math.max(0, sandboxTrustScore - 18);
-      setSandboxTrustScore(newScore);
-      setActiveViolationType('tab');
-
-      setSandboxLogs((prev) => [
-        { id: Date.now(), type: 'warning', text: `[SECURITY ALERT] Browser tab lost focus! (Violation #${count})`, time: timeStr },
-        ...prev
-      ]);
-
-      if (newScore <= 40 || count >= 3) {
-        triggerAutoSubmit();
-      }
-    } else if (type === 'face') {
-      setFaceDetected(false);
-      const newScore = Math.max(0, sandboxTrustScore - 25);
-      setSandboxTrustScore(newScore);
-      setActiveViolationType('face');
-
-      setSandboxLogs((prev) => [
-        { id: Date.now(), type: 'warning', text: `[BIOMETRIC ALERT] User face out of frame / Secondary face detected!`, time: timeStr },
-        ...prev
-      ]);
-
-      setTimeout(() => setFaceDetected(true), 3500);
-
-      if (newScore <= 40) {
-        triggerAutoSubmit();
-      }
-    } else if (type === 'monitor') {
-      setSecondMonitorDetected(true);
-      const newScore = Math.max(0, sandboxTrustScore - 35);
-      setSandboxTrustScore(newScore);
-      setActiveViolationType('monitor');
-
-      setSandboxLogs((prev) => [
-        { id: Date.now(), type: 'danger', text: `[HARDWARE ALERT] Secondary display device / screen sharing detected!`, time: timeStr },
-        ...prev
-      ]);
-
-      if (newScore <= 40) {
-        triggerAutoSubmit();
-      }
+  // Smooth scroll handler
+  const scrollToSection = (id) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
     }
   };
-
-  const triggerAutoSubmit = () => {
-    setIsAutoSubmitted(true);
-    setSandboxLogs((prev) => [
-      { id: Date.now() + 1, type: 'critical', text: '🚨 [CRITICAL BREACH] Exam forcibly terminated & auto-submitted to Admin.', time: new Date().toLocaleTimeString() },
-      ...prev
-    ]);
-  };
-
-  const resetSandbox = () => {
-    setSandboxTrustScore(98);
-    setTabSwitchCount(0);
-    setFaceDetected(true);
-    setSecondMonitorDetected(false);
-    setIsAutoSubmitted(false);
-    setActiveViolationType('none');
-    setSandboxLogs([
-      { id: Date.now(), type: 'success', text: 'Biometric webcam verification passed. (Confidence: 99.4%)', time: new Date().toLocaleTimeString() },
-      { id: Date.now() + 1, type: 'info', text: 'Secure session re-initialized. All security guards active.', time: new Date().toLocaleTimeString() }
-    ]);
-  };
-
-  // Toggle Proctor Student Action
-  const toggleStudentStatus = (id) => {
-    setProctorStudents((prev) =>
-      prev.map((student) => {
-        if (student.id === id) {
-          const isSuspended = student.status === 'Suspended';
-          return {
-            ...student,
-            status: isSuspended ? 'Active' : 'Suspended',
-            trustScore: isSuspended ? 95 : 0
-          };
-        }
-        return student;
-      })
-    );
-  };
-
-  const faqs = [
-    {
-      q: "How does TrustExam prevent cheating without requiring invasive software downloads?",
-      a: "TrustExam operates 100% inside modern web browsers using HTML5 Fullscreen APIs, Page Visibility Telemetry, biometrics via WebRTC, and dynamic network IP tracking. Zero plugins or heavy background software installations are required."
-    },
-    {
-      q: "What happens if a student accidentally loses internet connection during an exam?",
-      a: "TrustExam includes an Anti-Tamper Auto-Saver. Answers are encrypted and stored in local encrypted session storage. Once the network reconnects, progress automatically syncs seamlessly without losing a single response."
-    },
-    {
-      q: "How is the Dynamic Trust Score calculated?",
-      a: "The Trust Score starts at 100 and uses real-time event analytics. Points are deducted based on weighted severity: minor tab switches (-15 to -18 pts), missing biometric presence (-25 pts), or hardware screen duplication (-35 pts). Scores below threshold automatically trigger auto-submission."
-    },
-    {
-      q: "Is TrustExam compliant with global education and privacy standards (GDPR, FERPA)?",
-      a: "Yes. All video feeds and audit logs are encrypted in-transit (TLS 1.3) and at-rest (AES-256). We strictly adhere to FERPA and GDPR standards—student biometric data is analyzed client-side and never sold or misused."
-    }
-  ];
 
   return (
-    <div className="min-h-screen bg-[#030712] text-slate-100 font-sans selection:bg-cyan-500 selection:text-black overflow-x-hidden">
+    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-700 overflow-x-hidden">
       
-      {/* Dynamic Background Mesh */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute -top-40 -left-40 w-[500px] h-[500px] bg-blue-600/15 rounded-full blur-[140px] animate-pulse-glow"></div>
-        <div className="absolute top-1/3 -right-40 w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[140px] animate-pulse-glow" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute -bottom-40 left-1/3 w-[600px] h-[600px] bg-indigo-600/15 rounded-full blur-[140px]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:32px_32px] opacity-25"></div>
-      </div>
-
-      {/* Top Banner Alert */}
-      <div className="bg-gradient-to-r from-blue-900/60 via-slate-900 to-cyan-900/60 border-b border-cyan-500/20 py-2.5 px-4 text-center text-xs font-medium text-slate-300 relative z-50 flex items-center justify-center gap-2">
-        <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[10px] font-extrabold uppercase tracking-wider">
-          NEW RELEASE v2.4
-        </span>
-        <span>AI Biometric Proctoring & Dynamic Trust Score Engine live.</span>
-        <a href="#sandbox" className="text-cyan-400 font-bold hover:underline flex items-center gap-1">
-          Try Sandbox <ArrowRight className="w-3 h-3" />
-        </a>
-      </div>
-
-      {/* Navigation Header */}
-      <nav className="sticky top-0 z-40 backdrop-blur-2xl bg-[#030712]/80 border-b border-slate-800/80">
+      {/* NAVBAR */}
+      <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-100 shadow-soft-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-blue-600 via-cyan-400 to-emerald-400 p-[1.5px] shadow-lg shadow-cyan-500/20">
-              <div className="w-full h-full bg-[#030712] rounded-[10px] flex items-center justify-center">
-                <ShieldCheck className="w-6 h-6 text-cyan-400" />
-              </div>
+          
+          {/* Logo */}
+          <div 
+            className="flex items-center gap-2.5 cursor-pointer group"
+            onClick={() => scrollToSection('home')}
+          >
+            <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
+              <ShieldCheck className="w-6 h-6" />
             </div>
-            <div>
-              <span className="text-2xl font-black tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
-                TrustExam
-              </span>
-              <span className="ml-2 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
-                PROCTOR AI
-              </span>
-            </div>
+            <span className="text-xl font-bold tracking-tight text-slate-900">
+              Trust<span className="text-blue-600">Exam</span>
+            </span>
           </div>
 
-          <div className="hidden lg:flex items-center gap-8 text-sm font-semibold text-slate-300">
-            <a href="#sandbox" className="hover:text-cyan-400 transition-colors flex items-center gap-1.5">
-              <Activity className="w-4 h-4 text-cyan-400 animate-pulse" />
-              <span>Live Anti-Cheat Demo</span>
+          {/* Navigation Links */}
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
+            <button onClick={() => scrollToSection('home')} className="hover:text-blue-600 transition-colors">Home</button>
+            <button onClick={() => scrollToSection('features')} className="hover:text-blue-600 transition-colors">Features</button>
+            <button onClick={() => scrollToSection('about')} className="hover:text-blue-600 transition-colors">About</button>
+            <button onClick={() => scrollToSection('technology')} className="hover:text-blue-600 transition-colors">Technology</button>
+            <button onClick={() => scrollToSection('contact')} className="hover:text-blue-600 transition-colors">Contact</button>
+            <a 
+              href="https://github.com/arvi8080/TrustExam" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 hover:text-blue-600 transition-colors"
+            >
+              <GithubIcon className="w-4 h-4" />
+              <span>GitHub</span>
             </a>
-            <a href="#proctor-room" className="hover:text-cyan-400 transition-colors">Educator Room</a>
-            <a href="#features" className="hover:text-cyan-400 transition-colors">Security Features</a>
-            <a href="#sdg" className="hover:text-cyan-400 transition-colors flex items-center gap-1.5">
-              <Globe2 className="w-4 h-4 text-emerald-400" />
-              <span>SDG 4 Education</span>
-            </a>
-            <a href="#roi" className="hover:text-cyan-400 transition-colors">ROI Calculator</a>
-            <a href="#pricing" className="hover:text-cyan-400 transition-colors">Pricing</a>
           </div>
 
+          {/* Action Button */}
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/login')}
-              className="text-sm font-semibold text-slate-300 hover:text-white px-4 py-2 rounded-xl transition-colors"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium text-sm shadow-md shadow-blue-600/20 hover:shadow-lg hover:shadow-blue-600/30 hover:-translate-y-0.5 transition-all"
             >
-              Sign In
-            </button>
-            <button
-              onClick={() => navigate('/login')}
-              className="relative inline-flex items-center justify-center p-0.5 font-bold text-sm rounded-xl overflow-hidden shadow-xl shadow-cyan-500/20 group"
-            >
-              <span className="w-full h-full bg-gradient-to-r from-blue-600 via-cyan-400 to-emerald-400 absolute group-hover:opacity-90 transition-opacity"></span>
-              <span className="relative px-5 py-2.5 bg-[#030712] rounded-[10px] text-white flex items-center gap-2 group-hover:bg-opacity-0 transition-all duration-300">
-                Get Started
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </span>
+              Get Started
             </button>
           </div>
         </div>
       </nav>
 
       {/* HERO SECTION */}
-      <section className="relative pt-12 pb-20 lg:pt-20 lg:pb-28 z-10">
+      <section id="home" className="relative pt-12 pb-20 lg:pt-20 lg:pb-32 bg-gradient-to-b from-blue-50/70 via-sky-50/30 to-white overflow-hidden">
+        
+        {/* Abstract Background Shapes */}
+        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-tr from-blue-200/40 via-sky-200/30 to-transparent rounded-full blur-3xl pointer-events-none -z-10"></div>
+        <div className="absolute top-40 right-10 w-24 h-24 rounded-full bg-blue-400/10 animate-float-slow pointer-events-none"></div>
+        <div className="absolute top-20 left-10 w-16 h-16 rounded-2xl bg-sky-400/10 rotate-12 animate-float-slow pointer-events-none" style={{ animationDelay: '1.5s' }}></div>
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-4xl mx-auto space-y-6">
+          <div className="grid lg:grid-cols-12 gap-12 items-center">
             
-            {/* Top Pill */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900/90 border border-slate-800 text-xs font-bold text-cyan-300 shadow-inner">
-              <Sparkles className="w-4 h-4 text-amber-400" />
-              <span>Zero Plugins Required • HTML5 Browser Native Proctoring</span>
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-            </div>
-
-            {/* Main Headline */}
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.1]">
-              Next-Gen Exams.<br />
-              <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-emerald-400 bg-clip-text text-transparent">
-                Uncompromising Academic Integrity.
-              </span>
-            </h1>
-
-            {/* Subheadline */}
-            <p className="text-lg sm:text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
-              Empower universities, certification bodies, and educators with real-time biometric tracking, automated trust scores, anti-tab switch locks, and live student proctoring.
-            </p>
-
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <a
-                href="#sandbox"
-                className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 via-cyan-500 to-emerald-400 text-slate-950 font-black shadow-xl shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:scale-[1.02] transition-all flex items-center justify-center gap-2 text-base"
-              >
-                <Play className="w-5 h-5 fill-current" />
-                Launch Live Anti-Cheat Demo
-              </a>
-              <button
-                onClick={() => navigate('/login')}
-                className="w-full sm:w-auto px-8 py-4 rounded-xl bg-slate-900/90 border border-slate-800 text-slate-200 font-bold hover:bg-slate-800 hover:text-white transition-all flex items-center justify-center gap-2 text-base"
-              >
-                <UserCheck className="w-5 h-5 text-cyan-400" />
-                Access Educator Portal
-              </button>
-            </div>
-
-            {/* Trusted By Badges */}
-            <div className="pt-10 space-y-3">
-              <p className="text-xs font-extrabold uppercase tracking-widest text-slate-500">
-                TRUSTED & VERIFIED FOR ACCREDITED EXAMINATION BOARDS
-              </p>
-              <div className="flex flex-wrap items-center justify-center gap-8 opacity-70 text-slate-400 font-extrabold text-sm">
-                <div className="flex items-center gap-2"><Building2 className="w-4 h-4 text-cyan-400" /> Global EdTech Alliance</div>
-                <div className="flex items-center gap-2"><GraduationCap className="w-4 h-4 text-blue-400" /> National Skill Certifications</div>
-                <div className="flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-emerald-400" /> UN SDG 4 Education Standard</div>
-              </div>
-            </div>
-
-          </div>
-
-          {/* REALISTIC HERO MONITORING DISPLAY */}
-          <div className="mt-14 relative max-w-5xl mx-auto">
-            <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-blue-600 via-cyan-400 to-emerald-400 opacity-25 blur-2xl"></div>
-            <div className="relative rounded-3xl bg-slate-950/95 border border-slate-800/90 shadow-2xl overflow-hidden backdrop-blur-xl">
+            {/* Left Column */}
+            <div className="lg:col-span-6 space-y-6 text-left">
               
-              {/* Window Header */}
-              <div className="px-5 py-3.5 bg-slate-900/80 border-b border-slate-800 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-3.5 h-3.5 rounded-full bg-red-500/80"></div>
-                  <div className="w-3.5 h-3.5 rounded-full bg-amber-500/80"></div>
-                  <div className="w-3.5 h-3.5 rounded-full bg-emerald-500/80"></div>
-                  <span className="ml-2 text-xs font-mono text-slate-400 font-semibold">
-                    proctor.trustexam.app/live-session/CS301-FINAL
-                  </span>
-                </div>
-                <div className="flex items-center gap-3 text-xs font-mono text-emerald-400">
-                  <span className="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    PROCTOR TELEMETRY STREAMING
-                  </span>
-                </div>
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-100/80 border border-blue-200 text-blue-700 text-xs font-semibold shadow-soft-sm">
+                <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                <span>Secure • Reliable • AI Powered</span>
               </div>
 
-              {/* Realistic Dashboard Grid */}
-              <div className="p-6 grid lg:grid-cols-12 gap-6 text-left">
-                
-                {/* Exam Question View */}
-                <div className="lg:col-span-8 space-y-4">
-                  <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-center justify-between">
-                    <div>
-                      <div className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Active Final Examination</div>
-                      <div className="text-lg font-extrabold text-white">CS301: Advanced Data Structures & Algorithms</div>
-                    </div>
-                    <div className="px-3.5 py-1.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-mono font-bold flex items-center gap-1.5">
-                      <Clock className="w-4 h-4 text-cyan-400" />
-                      54:12 REMAINING
-                    </div>
-                  </div>
-
-                  <div className="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-4">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-bold text-slate-300">QUESTION 14 OF 30</span>
-                      <span className="text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20 font-mono">
-                        ✓ ENCRYPTED STATE AUTO-SAVED
-                      </span>
-                    </div>
-
-                    <p className="text-slate-100 text-sm font-semibold leading-relaxed">
-                      Given a Directed Acyclic Graph (DAG) with N nodes, what is the tightest time complexity to compute the topological ordering using Kahn's BFS Algorithm?
-                    </p>
-
-                    <div className="grid sm:grid-cols-2 gap-3 pt-2">
-                      <div className="p-3.5 rounded-xl bg-cyan-500/15 border-2 border-cyan-500 text-cyan-200 text-xs font-bold flex items-center justify-between">
-                        <span>A. O(V + E) using In-Degree Array</span>
-                        <CheckCircle2 className="w-4 h-4 text-cyan-400" />
-                      </div>
-                      <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-400 text-xs font-medium">
-                        B. O(V · E) using Matrix Multiplication
-                      </div>
-                      <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-400 text-xs font-medium">
-                        C. O(V²) using Dijkstra relaxation
-                      </div>
-                      <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-400 text-xs font-medium">
-                        D. O(2ⁿ) Backtracking Search
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right Biometrics & Live Telemetry Panel */}
-                <div className="lg:col-span-4 space-y-4">
-                  
-                  {/* Webcam Biometric Simulation Box */}
-                  <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3 relative overflow-hidden">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-slate-400 font-bold flex items-center gap-1.5">
-                        <Camera className="w-3.5 h-3.5 text-cyan-400" />
-                        WEBCAM BIOMETRIC
-                      </span>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                        MATCH 99.4%
-                      </span>
-                    </div>
-
-                    <div className="relative h-32 rounded-xl bg-slate-950 border border-slate-800 overflow-hidden flex items-center justify-center group">
-                      <img 
-                        src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80" 
-                        alt="Student Feed"
-                        className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform"
-                      />
-                      <div className="absolute inset-4 border-2 border-cyan-400/80 rounded-lg pointer-events-none flex items-start justify-between p-1">
-                        <span className="text-[9px] font-mono bg-cyan-500/90 text-slate-950 px-1 font-black rounded">
-                          FACE LOCKED
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Trust Score Gauge */}
-                  <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-slate-400 font-bold">TRUST SCORE RATING</span>
-                      <span className="text-emerald-400 font-black">HIGH INTEGRITY</span>
-                    </div>
-                    <div className="text-3xl font-black text-white flex items-baseline gap-1 font-mono">
-                      98 <span className="text-slate-500 text-xs font-normal">/ 100</span>
-                    </div>
-                    <div className="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden border border-slate-800">
-                      <div className="bg-gradient-to-r from-blue-500 via-cyan-400 to-emerald-400 h-full w-[98%]"></div>
-                    </div>
-                  </div>
-
-                </div>
-
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* INTERACTIVE ANTI-CHEAT SANDBOX DEMO */}
-      <section id="sandbox" className="py-20 relative z-10 border-t border-slate-800/80 bg-slate-950/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          
-          <div className="max-w-3xl mx-auto space-y-4 mb-14">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-bold">
-              <Activity className="w-4 h-4" />
-              HANDS-ON SIMULATOR
-            </div>
-            <h2 className="text-3xl sm:text-5xl font-black text-white">
-              Try the Anti-Cheat Engine Live
-            </h2>
-            <p className="text-slate-400 text-sm sm:text-base">
-              Test how TrustExam responds to unauthorized tab switches, biometric face loss, and secondary display monitors in real time.
-            </p>
-          </div>
-
-          <div className="max-w-5xl mx-auto rounded-3xl bg-slate-900/90 border border-slate-800 shadow-2xl overflow-hidden grid lg:grid-cols-12 text-left">
-            
-            {/* Left Control Panel */}
-            <div className="lg:col-span-5 p-6 sm:p-8 border-b lg:border-b-0 lg:border-r border-slate-800 space-y-6 bg-slate-950/60">
-              <div className="space-y-1">
-                <h3 className="text-base font-extrabold text-white flex items-center gap-2">
-                  <Sliders className="w-5 h-5 text-cyan-400" />
-                  Security Violation Triggers
-                </h3>
-                <p className="text-xs text-slate-400">Click any trigger below to simulate student behavior:</p>
-              </div>
-
-              <div className="space-y-3">
-                <button
-                  onClick={() => triggerViolation('tab')}
-                  disabled={isAutoSubmitted}
-                  className="w-full p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 font-bold text-xs flex items-center justify-between hover:bg-amber-500/20 transition-all disabled:opacity-40"
-                >
-                  <span className="flex items-center gap-2">
-                    <Monitor className="w-4 h-4 text-amber-400" />
-                    Simulate Tab Switch
-                  </span>
-                  <span className="px-2 py-0.5 bg-amber-500/20 rounded font-mono text-[10px]">
-                    Switches: {tabSwitchCount}
-                  </span>
-                </button>
-
-                <button
-                  onClick={() => triggerViolation('face')}
-                  disabled={isAutoSubmitted}
-                  className="w-full p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 font-bold text-xs flex items-center justify-between hover:bg-rose-500/20 transition-all disabled:opacity-40"
-                >
-                  <span className="flex items-center gap-2">
-                    <Camera className="w-4 h-4 text-rose-400" />
-                    Simulate Face Out of Frame
-                  </span>
-                  <span className="text-[10px] font-mono text-rose-400">
-                    Biometric
-                  </span>
-                </button>
-
-                <button
-                  onClick={() => triggerViolation('monitor')}
-                  disabled={isAutoSubmitted}
-                  className="w-full p-3.5 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 font-bold text-xs flex items-center justify-between hover:bg-indigo-500/20 transition-all disabled:opacity-40"
-                >
-                  <span className="flex items-center gap-2">
-                    <Maximize2 className="w-4 h-4 text-indigo-400" />
-                    Simulate 2nd Monitor Screen
-                  </span>
-                  <span className="text-[10px] font-mono text-indigo-400">
-                    Hardware
-                  </span>
-                </button>
-
-                <button
-                  onClick={resetSandbox}
-                  className="w-full py-3 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold flex items-center justify-center gap-2 hover:bg-slate-700 hover:text-white transition-colors"
-                >
-                  <RefreshCw className="w-4 h-4 text-slate-400" />
-                  Reset Session Simulator
-                </button>
-              </div>
-
-              {/* Dynamic Trust Meter */}
-              <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-3">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-400 font-bold">TRUST SCORE TELEMETRY</span>
-                  <span className={`font-extrabold ${sandboxTrustScore > 75 ? 'text-emerald-400' : sandboxTrustScore > 40 ? 'text-amber-400' : 'text-red-400'}`}>
-                    {sandboxTrustScore > 75 ? 'PASSED' : sandboxTrustScore > 40 ? 'WARNING' : 'AUTO-TERMINATED'}
-                  </span>
-                </div>
-                <div className="text-4xl font-black text-white font-mono">
-                  {sandboxTrustScore}<span className="text-slate-500 text-sm font-normal"> / 100</span>
-                </div>
-                <div className="w-full bg-slate-950 h-3 rounded-full overflow-hidden border border-slate-800">
-                  <div 
-                    className={`h-full transition-all duration-500 ${
-                      sandboxTrustScore > 75 ? 'bg-gradient-to-r from-blue-500 to-emerald-400' : sandboxTrustScore > 40 ? 'bg-amber-400' : 'bg-red-500'
-                    }`}
-                    style={{ width: `${sandboxTrustScore}%` }}
-                  ></div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Live Security Telemetry Feed */}
-            <div className="lg:col-span-7 p-6 sm:p-8 space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                <h4 className="text-sm font-bold text-slate-200 flex items-center gap-2 font-mono">
-                  <Eye className="w-4 h-4 text-cyan-400" />
-                  LIVE AUDIT LOG STREAM
-                </h4>
-                <span className="text-[11px] font-mono text-emerald-400 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  STREAMING LOGS
+              {/* Heading */}
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.15]">
+                Secure Online <br />
+                <span className="bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 bg-clip-text text-transparent">
+                  Examination Platform
                 </span>
+              </h1>
+
+              {/* Description */}
+              <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-normal">
+                Conduct, monitor and evaluate online examinations securely with AI-powered proctoring, role-based access control, and real-time monitoring.
+              </p>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-wrap items-center gap-4 pt-2">
+                <button
+                  onClick={() => setIsDemoModalOpen(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-7 py-3.5 rounded-xl font-semibold text-sm shadow-lg shadow-blue-600/25 hover:shadow-xl hover:shadow-blue-600/35 hover:-translate-y-0.5 transition-all flex items-center gap-2"
+                >
+                  <Play className="w-4 h-4 fill-current" />
+                  Live Demo
+                </button>
+
+                <button
+                  onClick={() => scrollToSection('features')}
+                  className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-7 py-3.5 rounded-xl font-semibold text-sm shadow-soft-sm hover:shadow-soft-md transition-all"
+                >
+                  Learn More
+                </button>
               </div>
 
-              {/* Feed Console */}
-              <div className="h-64 overflow-y-auto space-y-2.5 pr-2 font-mono text-xs">
-                {sandboxLogs.map((log) => (
-                  <div
-                    key={log.id}
-                    className={`p-3.5 rounded-xl border text-left transition-all ${
-                      log.type === 'critical'
-                        ? 'bg-red-500/20 border-red-500/50 text-red-200 shadow-lg'
-                        : log.type === 'danger'
-                        ? 'bg-rose-500/10 border-rose-500/30 text-rose-300'
-                        : log.type === 'warning'
-                        ? 'bg-amber-500/10 border-amber-500/30 text-amber-300'
-                        : log.type === 'success'
-                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-                        : 'bg-slate-950 border-slate-800 text-slate-300'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
-                      <span>TIME: {log.time}</span>
-                      <span className="uppercase font-extrabold">{log.type}</span>
-                    </div>
-                    <div>{log.text}</div>
-                  </div>
-                ))}
-              </div>
-
-              {isAutoSubmitted && (
-                <div className="p-4 rounded-xl bg-red-500/20 border border-red-500/40 text-red-200 text-xs font-bold text-center flex items-center justify-center gap-2">
-                  <AlertTriangle className="w-5 h-5 text-red-400 animate-bounce" />
-                  Security Threshold Reached: Exam Auto-Submitted to Admin Dashboard!
+              {/* Highlight Stats Pill */}
+              <div className="pt-6 flex items-center gap-6 text-xs font-medium text-slate-500 border-t border-slate-200/60">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-blue-600" />
+                  <span>Role-Based Access</span>
                 </div>
-              )}
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-blue-600" />
+                  <span>Real-time Anti-Cheat</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-blue-600" />
+                  <span>Auto-Submit Guard</span>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Right Column: Modern Laptop Mockup */}
+            <div className="lg:col-span-6 relative">
+              <div className="relative mx-auto max-w-xl">
+                
+                {/* Laptop Body Outer Shadow */}
+                <div className="absolute -inset-2 bg-gradient-to-r from-blue-500 to-sky-400 rounded-3xl opacity-15 blur-xl"></div>
+                
+                {/* Laptop Screen Frame */}
+                <div className="relative rounded-2xl bg-slate-900 p-2 shadow-soft-xl border border-slate-800">
+                  
+                  {/* Laptop Top Camera Dot */}
+                  <div className="flex items-center justify-center gap-1.5 pb-2 pt-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-slate-700"></div>
+                  </div>
+
+                  {/* Screen Content Wrapper */}
+                  <div className="bg-slate-50 rounded-xl overflow-hidden border border-slate-200">
+                    
+                    {/* Mockup Top Navigation Bar */}
+                    <div className="bg-white px-4 py-3 border-b border-slate-200 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 rounded-full bg-red-400"></div>
+                        <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
+                        <div className="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>
+                        <span className="text-[11px] font-medium text-slate-400 ml-2">trustexam.app/dashboard</span>
+                      </div>
+
+                      {/* Mockup Tabs */}
+                      <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg text-[11px] font-medium">
+                        <button
+                          onClick={() => setActiveMockupTab('admin')}
+                          className={`px-2.5 py-1 rounded-md transition-all ${
+                            activeMockupTab === 'admin' ? 'bg-white text-blue-600 shadow-soft-sm font-semibold' : 'text-slate-500'
+                          }`}
+                        >
+                          Admin
+                        </button>
+                        <button
+                          onClick={() => setActiveMockupTab('student')}
+                          className={`px-2.5 py-1 rounded-md transition-all ${
+                            activeMockupTab === 'student' ? 'bg-white text-blue-600 shadow-soft-sm font-semibold' : 'text-slate-500'
+                          }`}
+                        >
+                          Student
+                        </button>
+                        <button
+                          onClick={() => setActiveMockupTab('analytics')}
+                          className={`px-2.5 py-1 rounded-md transition-all ${
+                            activeMockupTab === 'analytics' ? 'bg-white text-blue-600 shadow-soft-sm font-semibold' : 'text-slate-500'
+                          }`}
+                        >
+                          Analytics
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Mockup Tab Views */}
+                    <div className="p-5 text-left min-h-[280px] bg-slate-50">
+                      
+                      {activeMockupTab === 'admin' && (
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h4 className="text-sm font-bold text-slate-800">Admin Control Center</h4>
+                              <p className="text-[11px] text-slate-500">Live active exam monitoring & student management</p>
+                            </div>
+                            <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-semibold border border-emerald-200">
+                              System Online
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-3 gap-3">
+                            <div className="p-3 bg-white rounded-xl border border-slate-200 shadow-soft-sm">
+                              <div className="text-[10px] text-slate-400">Total Exams</div>
+                              <div className="text-lg font-bold text-slate-800">124</div>
+                            </div>
+                            <div className="p-3 bg-white rounded-xl border border-slate-200 shadow-soft-sm">
+                              <div className="text-[10px] text-slate-400 font-medium">Active Students</div>
+                              <div className="text-lg font-bold text-blue-600">1,248</div>
+                            </div>
+                            <div className="p-3 bg-white rounded-xl border border-slate-200 shadow-soft-sm">
+                              <div className="text-[10px] text-slate-400">Trust Index</div>
+                              <div className="text-lg font-bold text-emerald-600">99.8%</div>
+                            </div>
+                          </div>
+
+                          <div className="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2 text-xs">
+                            <div className="flex items-center justify-between text-slate-700 font-medium">
+                              <span>CS301: Algorithms Final Exam</span>
+                              <span className="text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded font-semibold">Active Now</span>
+                            </div>
+                            <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                              <div className="bg-blue-600 h-full w-[78%]"></div>
+                            </div>
+                            <div className="flex items-center justify-between text-[10px] text-slate-400">
+                              <span>184 Test Takers</span>
+                              <span>Time Left: 45 mins</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {activeMockupTab === 'student' && (
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h4 className="text-sm font-bold text-slate-800">Student Exam Portal</h4>
+                              <p className="text-[11px] text-slate-500">Clean, distraction-free examination view</p>
+                            </div>
+                            <span className="px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 text-[10px] font-semibold">
+                              Q12 of 35
+                            </span>
+                          </div>
+
+                          <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-3">
+                            <p className="text-xs font-medium text-slate-800">
+                              What is the time complexity of searching in a Balanced Binary Search Tree (AVL)?
+                            </p>
+                            <div className="space-y-1.5 text-xs">
+                              <div className="p-2 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg font-medium">
+                                A. O(log N) - Logarithmic Time
+                              </div>
+                              <div className="p-2 bg-slate-50 border border-slate-100 text-slate-600 rounded-lg">
+                                B. O(N) - Linear Time
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between text-[11px] text-slate-500">
+                            <span className="flex items-center gap-1 text-emerald-600 font-medium">
+                              <CheckCircle2 className="w-3.5 h-3.5" /> Progress Auto-Saved
+                            </span>
+                            <span className="font-mono text-slate-700 font-semibold">Timer: 00:34:12</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {activeMockupTab === 'analytics' && (
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h4 className="text-sm font-bold text-slate-800">Results & Analytics</h4>
+                              <p className="text-[11px] text-slate-500">Performance reports & grade distribution</p>
+                            </div>
+                            <span className="px-2.5 py-1 rounded-full bg-slate-200 text-slate-700 text-[10px] font-semibold">
+                              Batch 2026
+                            </span>
+                          </div>
+
+                          <div className="bg-white p-3.5 rounded-xl border border-slate-200 space-y-3">
+                            <div className="text-xs font-semibold text-slate-700">Class Performance Score Distribution</div>
+                            <div className="flex items-end gap-2 h-24 pt-2 px-2">
+                              <div className="flex-1 bg-blue-200 rounded-t h-[40%] text-[9px] text-center text-slate-600 pt-1">C</div>
+                              <div className="flex-1 bg-blue-400 rounded-t h-[70%] text-[9px] text-center text-white pt-1">B</div>
+                              <div className="flex-1 bg-blue-600 rounded-t h-[95%] text-[9px] text-center text-white pt-1 font-bold">A</div>
+                              <div className="flex-1 bg-sky-400 rounded-t h-[60%] text-[9px] text-center text-white pt-1">A+</div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between text-xs text-slate-600">
+                            <span>Average Score: <strong className="text-blue-600">88.4%</strong></span>
+                            <span>Pass Rate: <strong className="text-emerald-600">96.2%</strong></span>
+                          </div>
+                        </div>
+                      )}
+
+                    </div>
+                  </div>
+                </div>
+
+                {/* Laptop Base */}
+                <div className="h-3.5 bg-slate-800 rounded-b-xl border-t border-slate-700 relative flex items-center justify-center">
+                  <div className="w-16 h-1 bg-slate-600 rounded-full"></div>
+                </div>
+              </div>
             </div>
 
           </div>
         </div>
       </section>
 
-      {/* EDUCATOR CONTROL ROOM (INTERACTIVE ADMIN MONITOR) */}
-      <section id="proctor-room" className="py-20 relative z-10 border-t border-slate-800/80">
+      {/* FEATURES SECTION */}
+      <section id="features" className="py-20 bg-slate-50/60 border-y border-slate-200/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          <div className="text-center max-w-3xl mx-auto space-y-4 mb-14">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-bold">
-              <Users className="w-4 h-4" />
-              EDUCATOR COMMAND CENTER
-            </div>
-            <h2 className="text-3xl sm:text-5xl font-black text-white">
-              Live Student Proctoring Grid
+          <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
+            <span className="text-xs font-bold uppercase tracking-widest text-blue-600">FEATURES</span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+              Why Choose TrustExam?
             </h2>
-            <p className="text-slate-400 text-sm sm:text-base">
-              Monitor active test-takers simultaneously. Click any student card to suspend or reinstate session access instantly.
+            <p className="text-slate-600 text-base">
+              Everything you need to conduct, monitor, and evaluate online examinations with maximum security and ease.
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto text-left">
-            {proctorStudents.map((student) => (
-              <div
-                key={student.id}
-                className={`p-5 rounded-2xl border transition-all ${
-                  student.status === 'Suspended'
-                    ? 'bg-red-950/20 border-red-500/40 opacity-75'
-                    : student.status === 'Warning'
-                    ? 'bg-amber-950/20 border-amber-500/40'
-                    : 'bg-slate-900/80 border-slate-800 hover:border-cyan-500/50'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <img
-                    src={student.avatar}
-                    alt={student.name}
-                    className="w-12 h-12 rounded-xl object-cover border border-slate-700"
-                  />
-                  <span
-                    className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${
-                      student.status === 'Active'
-                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                        : student.status === 'Warning'
-                        ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
-                        : 'bg-red-500/20 text-red-400 border border-red-500/40'
-                    }`}
-                  >
-                    {student.status}
-                  </span>
-                </div>
-
-                <div className="space-y-1 mb-4">
-                  <h4 className="text-base font-bold text-white">{student.name}</h4>
-                  <div className="text-xs text-slate-400 font-mono">{student.id} • {student.exam}</div>
-                </div>
-
-                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2 mb-4">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-400">Trust Score</span>
-                    <span className="font-mono font-bold text-white">{student.trustScore}/100</span>
-                  </div>
-                  <div className="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full ${
-                        student.trustScore > 75 ? 'bg-emerald-400' : student.trustScore > 40 ? 'bg-amber-400' : 'bg-red-500'
-                      }`}
-                      style={{ width: `${student.trustScore}%` }}
-                    ></div>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => toggleStudentStatus(student.id)}
-                  className={`w-full py-2.5 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 ${
-                    student.status === 'Suspended'
-                      ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
-                      : 'bg-slate-800 hover:bg-red-600/80 hover:text-white text-slate-300'
-                  }`}
-                >
-                  {student.status === 'Suspended' ? (
-                    <>
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Reinstate Student
-                    </>
-                  ) : (
-                    <>
-                      <UserX className="w-3.5 h-3.5" /> Suspend Student
-                    </>
-                  )}
-                </button>
-              </div>
-            ))}
-          </div>
-
-        </div>
-      </section>
-
-      {/* CORE FEATURES MATRIX */}
-      <section id="features" className="py-20 relative z-10 border-t border-slate-800/80 bg-slate-950/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          
-          <div className="max-w-3xl mx-auto space-y-4 mb-16">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-cyan-400">
-              Complete Security Architecture
-            </h2>
-            <h3 className="text-3xl sm:text-5xl font-black text-white">
-              6 Layer Academic Defense Matrix
-            </h3>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 text-left">
-            <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-cyan-500/50 transition-all space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
-                <Eye className="w-6 h-6" />
-              </div>
-              <h4 className="text-lg font-bold text-white">Tab & Focus Telemetry</h4>
-              <p className="text-sm text-slate-400">
-                Detects loss of window focus instantly, recording timestamped violation logs for academic review.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-blue-500/50 transition-all space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400">
-                <ShieldCheck className="w-6 h-6" />
-              </div>
-              <h4 className="text-lg font-bold text-white">Dynamic Trust Score Engine</h4>
-              <p className="text-sm text-slate-400">
-                Calculates weighted student integrity metrics in real-time, auto-terminating compromised sessions.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-emerald-500/50 transition-all space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                <Zap className="w-6 h-6" />
-              </div>
-              <h4 className="text-lg font-bold text-white">Anti-Tamper Auto-Save</h4>
-              <p className="text-sm text-slate-400">
-                Encrypted answer persistence ensures zero progress loss even during temporary network drops.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-amber-500/50 transition-all space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                <Award className="w-6 h-6" />
-              </div>
-              <h4 className="text-lg font-bold text-white">Gamified Badge System</h4>
-              <p className="text-sm text-slate-400">
-                Rewards students for honest test completion with certified integrity badges and public rank unlocks.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-indigo-500/50 transition-all space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
-                <FileCheck2 className="w-6 h-6" />
-              </div>
-              <h4 className="text-lg font-bold text-white">Verified PDF Certificates</h4>
-              <p className="text-sm text-slate-400">
-                Generates tamper-verified PDF transcripts with embedded trust score metrics for official records.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-rose-500/50 transition-all space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            
+            {/* Feature Card 1 */}
+            <div className="p-7 bg-white rounded-2xl border border-slate-200/80 shadow-soft-md hover:shadow-soft-lg hover:-translate-y-1 transition-all space-y-4 text-left group">
+              <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xl group-hover:bg-blue-600 group-hover:text-white transition-colors">
                 <Lock className="w-6 h-6" />
               </div>
-              <h4 className="text-lg font-bold text-white">Role-Based JWT Auth</h4>
-              <p className="text-sm text-slate-400">
-                Military-grade JWT authentication and role middleware preventing unauthorized access to exam data.
-              </p>
+              <h3 className="text-lg font-bold text-slate-900">Secure Authentication</h3>
+              <ul className="space-y-2 text-sm text-slate-600">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600" /> JWT Authentication
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600" /> Role Based Access
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600" /> Encrypted APIs
+                </li>
+              </ul>
             </div>
+
+            {/* Feature Card 2 */}
+            <div className="p-7 bg-white rounded-2xl border border-slate-200/80 shadow-soft-md hover:shadow-soft-lg hover:-translate-y-1 transition-all space-y-4 text-left group">
+              <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xl group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                <FileText className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">Online Examinations</h3>
+              <ul className="space-y-2 text-sm text-slate-600">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600" /> Create Exams & Tests
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600" /> MCQs & Objective Questions
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600" /> Coding Tests & Auto Submission
+                </li>
+              </ul>
+            </div>
+
+            {/* Feature Card 3 */}
+            <div className="p-7 bg-white rounded-2xl border border-slate-200/80 shadow-soft-md hover:shadow-soft-lg hover:-translate-y-1 transition-all space-y-4 text-left group">
+              <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xl group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                <Eye className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">Real-Time Monitoring</h3>
+              <ul className="space-y-2 text-sm text-slate-600">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600" /> Exam Countdown Timer
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600" /> Anti-Tamper Auto Save
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600" /> Student Activity Tracking
+                </li>
+              </ul>
+            </div>
+
+            {/* Feature Card 4 */}
+            <div className="p-7 bg-white rounded-2xl border border-slate-200/80 shadow-soft-md hover:shadow-soft-lg hover:-translate-y-1 transition-all space-y-4 text-left group">
+              <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xl group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                <BarChart3 className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">Result & Analytics</h3>
+              <ul className="space-y-2 text-sm text-slate-600">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600" /> Instant Results Generation
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600" /> Performance Reports
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600" /> Student Leaderboard & Rank
+                </li>
+              </ul>
+            </div>
+
+            {/* Feature Card 5 */}
+            <div className="p-7 bg-white rounded-2xl border border-slate-200/80 shadow-soft-md hover:shadow-soft-lg hover:-translate-y-1 transition-all space-y-4 text-left group">
+              <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xl group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                <Users className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">Role-Based Dashboard</h3>
+              <ul className="space-y-2 text-sm text-slate-600">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600" /> Admin Control Console
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600" /> Faculty Management Portal
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600" /> Student Exam Interface
+                </li>
+              </ul>
+            </div>
+
+            {/* Feature Card 6 */}
+            <div className="p-7 bg-white rounded-2xl border border-slate-200/80 shadow-soft-md hover:shadow-soft-lg hover:-translate-y-1 transition-all space-y-4 text-left group">
+              <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xl group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                <Cloud className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">Cloud Deployment</h3>
+              <ul className="space-y-2 text-sm text-slate-600">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600" /> Docker Ready Containerization
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600" /> Vercel & Render Integration
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600" /> MongoDB Atlas Cloud DB
+                </li>
+              </ul>
+            </div>
+
           </div>
+
         </div>
       </section>
 
-      {/* UN SDG GOAL 4 BANNER */}
-      <section id="sdg" className="py-16 relative z-10 bg-gradient-to-b from-blue-950/40 via-slate-950 to-slate-950 border-t border-slate-800">
+      {/* ABOUT / USE CASE SECTION */}
+      <section id="about" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="p-8 sm:p-12 rounded-3xl bg-slate-900/90 border border-cyan-500/30 shadow-2xl flex flex-col lg:flex-row items-center justify-between gap-8 text-left">
-            <div className="space-y-4 max-w-2xl">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold">
-                <Globe2 className="w-4 h-4" />
-                UNITED NATIONS SDG GOAL 4 COMMITMENT
-              </div>
-              <h3 className="text-2xl sm:text-4xl font-black text-white leading-tight">
-                Empowering Remote Learners with Equitable Certification
-              </h3>
-              <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
-                TrustExam provides accessible, bandwidth-optimized exam proctoring for students in remote and underserved regions—ensuring quality education and verified skill certification for all.
+          <div className="grid lg:grid-cols-12 gap-12 items-center">
+            
+            <div className="lg:col-span-6 text-left space-y-5">
+              <span className="text-xs font-bold uppercase tracking-widest text-blue-600">ABOUT TRUSTEXAM</span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+                Designed for Academic & Enterprise Excellence
+              </h2>
+              <p className="text-slate-600 text-base leading-relaxed">
+                TrustExam is a full-stack online examination platform designed for universities, colleges, and training institutes. It addresses equitable access to quality education (UN SDG Goal 4) by enabling tamper-evident, automated exam proctoring anywhere in the world.
               </p>
+              <div className="space-y-3 pt-2 text-sm text-slate-700">
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Check className="w-4 h-4 font-bold" />
+                  </div>
+                  <div>
+                    <strong>For Academics & College Projects:</strong> Demonstrates full-stack architecture (React, Node, Express, Mongo) with production-ready security patterns.
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Check className="w-4 h-4 font-bold" />
+                  </div>
+                  <div>
+                    <strong>For Software Engineering Interviews:</strong> Clean REST APIs, stateful anti-cheat tracking, JWT authentication middleware, and Docker container support.
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div className="flex-shrink-0">
-              <div className="p-8 rounded-2xl bg-slate-950 border border-slate-800 text-center space-y-2 shadow-xl">
-                <div className="text-5xl font-black text-emerald-400 font-mono">SDG 4</div>
-                <div className="text-xs text-slate-300 font-bold">Quality Education Standard</div>
-                <div className="text-[11px] text-slate-500">Accessible • Transparent • Secure</div>
+            <div className="lg:col-span-6">
+              <div className="p-8 bg-gradient-to-br from-blue-50 via-sky-50 to-white rounded-3xl border border-blue-100 shadow-soft-lg space-y-6 text-left">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-md shadow-blue-500/20">
+                    <Award className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-bold text-slate-900">SDG Goal 4 Quality Education</h4>
+                    <p className="text-xs text-slate-500">Equitable, remote-certified online testing</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-white rounded-xl border border-slate-200/80 shadow-soft-sm">
+                    <div className="text-2xl font-extrabold text-blue-600">100%</div>
+                    <div className="text-xs text-slate-500 mt-1">Browser Native Access</div>
+                  </div>
+                  <div className="p-4 bg-white rounded-xl border border-slate-200/80 shadow-soft-sm">
+                    <div className="text-2xl font-extrabold text-emerald-600">Zero</div>
+                    <div className="text-xs text-slate-500 mt-1">Software Downloads Needed</div>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-white rounded-xl border border-slate-200/80 shadow-soft-sm flex items-center justify-between text-xs font-semibold text-slate-700">
+                  <span>Tamper-Evident Audit Logs</span>
+                  <span className="text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100">Verified</span>
+                </div>
               </div>
             </div>
+
           </div>
         </div>
       </section>
 
-      {/* ROI CALCULATOR */}
-      <section id="roi" className="py-20 relative z-10 border-t border-slate-800/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      {/* TECHNOLOGY SECTION */}
+      <section id="technology" className="py-20 bg-slate-50/60 border-t border-slate-200/60">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          <div className="max-w-3xl mx-auto space-y-4 mb-14">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-bold">
-              <TrendingUp className="w-4 h-4" />
-              INSTITUTIONAL SAVINGS
-            </div>
-            <h2 className="text-3xl sm:text-5xl font-black text-white">
-              Calculate Your Proctoring ROI
+          <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
+            <span className="text-xs font-bold uppercase tracking-widest text-blue-600">TECHNOLOGY STACK</span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+              Built with Modern Technologies
             </h2>
-            <p className="text-slate-400 text-sm sm:text-base">
-              See how many proctoring hours and dollars TrustExam saves your institution every month.
+            <p className="text-slate-600 text-base">
+              A robust, scalable tech stack engineered for reliability, security, and developer efficiency.
             </p>
           </div>
 
-          <div className="max-w-3xl mx-auto p-8 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-2xl text-left space-y-8">
-            <div className="grid sm:grid-cols-2 gap-8">
-              <div className="space-y-3">
-                <label className="text-xs font-bold text-slate-300 flex items-center justify-between">
-                  <span>ACTIVE STUDENTS</span>
-                  <span className="font-mono text-cyan-400 text-base">{studentCount} Students</span>
-                </label>
-                <input
-                  type="range"
-                  min="50"
-                  max="2000"
-                  step="50"
-                  value={studentCount}
-                  onChange={(e) => setStudentCount(Number(e.target.value))}
-                  className="w-full h-2 bg-slate-950 rounded-lg appearance-none cursor-pointer accent-cyan-400"
-                />
-              </div>
-
-              <div className="space-y-3">
-                <label className="text-xs font-bold text-slate-300 flex items-center justify-between">
-                  <span>EXAMS PER MONTH</span>
-                  <span className="font-mono text-cyan-400 text-base">{examsPerMonth} Exams</span>
-                </label>
-                <input
-                  type="range"
-                  min="1"
-                  max="12"
-                  step="1"
-                  value={examsPerMonth}
-                  onChange={(e) => setExamsPerMonth(Number(e.target.value))}
-                  className="w-full h-2 bg-slate-950 rounded-lg appearance-none cursor-pointer accent-cyan-400"
-                />
-              </div>
-            </div>
-
-            <div className="grid sm:grid-cols-2 gap-4 pt-4 border-t border-slate-800">
-              <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
-                <div className="text-xs text-slate-400 font-bold">ESTIMATED PROCTOR HOURS SAVED</div>
-                <div className="text-3xl font-black text-emerald-400 font-mono">
-                  {(studentCount * examsPerMonth * 1.5).toLocaleString()} hrs / mo
-                </div>
-              </div>
-              <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
-                <div className="text-xs text-slate-400 font-bold">ESTIMATED COST REDUCTION</div>
-                <div className="text-3xl font-black text-cyan-400 font-mono">
-                  ${(studentCount * examsPerMonth * 12).toLocaleString()} / yr
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* PRICING TIERS */}
-      <section id="pricing" className="py-20 relative z-10 border-t border-slate-800/80 bg-slate-950/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          
-          <div className="max-w-3xl mx-auto space-y-4 mb-16">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-cyan-400">
-              Transparent Pricing
-            </h2>
-            <h3 className="text-3xl sm:text-5xl font-black text-white">
-              Scalable Plans for Tutors & Academies
-            </h3>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto text-left">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
             
-            {/* Free Tier */}
-            <div className="p-8 rounded-3xl bg-slate-900/60 border border-slate-800 space-y-6 flex flex-col justify-between">
-              <div className="space-y-4">
-                <h4 className="text-lg font-bold text-white">Community Tutor</h4>
-                <p className="text-xs text-slate-400">For individual teachers & small study cohorts.</p>
-                <div className="text-4xl font-black text-white">Free</div>
-                <ul className="space-y-3 text-xs text-slate-300">
-                  <li className="flex items-center gap-2.5">
-                    <Check className="w-4 h-4 text-emerald-400" />
-                    Up to 50 active students
-                  </li>
-                  <li className="flex items-center gap-2.5">
-                    <Check className="w-4 h-4 text-emerald-400" />
-                    Core tab switch monitoring
-                  </li>
-                  <li className="flex items-center gap-2.5">
-                    <Check className="w-4 h-4 text-emerald-400" />
-                    Standard Trust Scores
-                  </li>
-                </ul>
-              </div>
-              <button
-                onClick={() => navigate('/login')}
-                className="w-full py-3.5 rounded-xl bg-slate-800 text-slate-200 text-xs font-bold hover:bg-slate-700 transition-colors"
-              >
-                Get Started Free
-              </button>
-            </div>
-
-            {/* School Pro Tier */}
-            <div className="p-8 rounded-3xl bg-slate-900 border-2 border-cyan-400 shadow-2xl shadow-cyan-500/10 space-y-6 flex flex-col justify-between relative">
-              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-cyan-400 text-slate-950 text-[10px] font-black tracking-widest uppercase">
-                MOST POPULAR
-              </div>
-              <div className="space-y-4">
-                <h4 className="text-lg font-bold text-white">Academy Pro</h4>
-                <p className="text-xs text-slate-400">For secondary schools & training institutes.</p>
-                <div className="text-4xl font-black text-white">$49 <span className="text-xs text-slate-400 font-normal">/ month</span></div>
-                <ul className="space-y-3 text-xs text-slate-300">
-                  <li className="flex items-center gap-2.5">
-                    <Check className="w-4 h-4 text-emerald-400" />
-                    Unlimited active students & exams
-                  </li>
-                  <li className="flex items-center gap-2.5">
-                    <Check className="w-4 h-4 text-emerald-400" />
-                    Live Admin Proctor Room
-                  </li>
-                  <li className="flex items-center gap-2.5">
-                    <Check className="w-4 h-4 text-emerald-400" />
-                    Automated PDF Result Transcripts
-                  </li>
-                  <li className="flex items-center gap-2.5">
-                    <Check className="w-4 h-4 text-emerald-400" />
-                    Student Blocking & Audit Logs
-                  </li>
-                </ul>
-              </div>
-              <button
-                onClick={() => navigate('/login')}
-                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 via-cyan-400 to-emerald-400 text-slate-950 text-xs font-black shadow-lg hover:brightness-110 transition-all"
-              >
-                Start 14-Day Free Trial
-              </button>
-            </div>
-
-            {/* Campus Enterprise */}
-            <div className="p-8 rounded-3xl bg-slate-900/60 border border-slate-800 space-y-6 flex flex-col justify-between">
-              <div className="space-y-4">
-                <h4 className="text-lg font-bold text-white">University Campus</h4>
-                <p className="text-xs text-slate-400">For large universities & national testing boards.</p>
-                <div className="text-4xl font-black text-white">Custom</div>
-                <ul className="space-y-3 text-xs text-slate-300">
-                  <li className="flex items-center gap-2.5">
-                    <Check className="w-4 h-4 text-emerald-400" />
-                    Docker On-Premise Deployment
-                  </li>
-                  <li className="flex items-center gap-2.5">
-                    <Check className="w-4 h-4 text-emerald-400" />
-                    Custom Branding & Domain
-                  </li>
-                  <li className="flex items-center gap-2.5">
-                    <Check className="w-4 h-4 text-emerald-400" />
-                    Dedicated MongoDB & Audit Logs
-                  </li>
-                </ul>
-              </div>
-              <button
-                onClick={() => navigate('/login')}
-                className="w-full py-3.5 rounded-xl bg-slate-800 text-slate-200 text-xs font-bold hover:bg-slate-700 transition-colors"
-              >
-                Contact Campus Sales
-              </button>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ SECTION */}
-      <section className="py-20 relative z-10 border-t border-slate-800/80">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-left">
-          
-          <div className="text-center space-y-4 mb-14">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-cyan-400">
-              Got Questions?
-            </h2>
-            <h3 className="text-3xl sm:text-4xl font-black text-white">
-              Frequently Asked Questions
-            </h3>
-          </div>
-
-          <div className="space-y-4">
-            {faqs.map((faq, idx) => (
-              <div
+            {[
+              { name: 'React', desc: 'Frontend UI', icon: Code2, color: 'text-sky-500 bg-sky-50' },
+              { name: 'Node.js', desc: 'Backend Runtime', icon: Server, color: 'text-emerald-600 bg-emerald-50' },
+              { name: 'Express.js', desc: 'REST API Framework', icon: Layers, color: 'text-slate-700 bg-slate-100' },
+              { name: 'MongoDB', desc: 'Database Store', icon: Database, color: 'text-emerald-600 bg-emerald-50' },
+              { name: 'JWT', desc: 'Security Tokens', icon: Key, color: 'text-amber-600 bg-amber-50' },
+              { name: 'Docker', desc: 'Containerization', icon: Boxes, color: 'text-blue-600 bg-blue-50' },
+              { name: 'Tailwind CSS', desc: 'Utility Styling', icon: Sparkles, color: 'text-cyan-500 bg-cyan-50' },
+              { name: 'Vercel', desc: 'Frontend Hosting', icon: Cloud, color: 'text-slate-900 bg-slate-100' },
+              { name: 'Render', desc: 'Backend Hosting', icon: HardDrive, color: 'text-indigo-600 bg-indigo-50' },
+              { name: 'GitHub', desc: 'Source Control', icon: GithubIcon, color: 'text-slate-800 bg-slate-100' }
+            ].map((tech, idx) => (
+              <div 
                 key={idx}
-                className="rounded-2xl bg-slate-900/80 border border-slate-800 overflow-hidden"
+                className="p-5 bg-white rounded-2xl border border-slate-200/80 shadow-soft-sm hover:shadow-soft-md hover:-translate-y-1 transition-all text-center space-y-2 group"
               >
-                <button
-                  onClick={() => setOpenFaq(openFaq === idx ? -1 : idx)}
-                  className="w-full p-5 text-left flex items-center justify-between font-bold text-white text-sm sm:text-base hover:text-cyan-400 transition-colors"
-                >
-                  <span>{faq.q}</span>
-                  <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform ${openFaq === idx ? 'rotate-180 text-cyan-400' : ''}`} />
-                </button>
-                {openFaq === idx && (
-                  <div className="p-5 pt-0 text-xs sm:text-sm text-slate-300 leading-relaxed border-t border-slate-800/40">
-                    {faq.a}
-                  </div>
-                )}
+                <div className={`w-10 h-10 rounded-xl mx-auto flex items-center justify-center ${tech.color} group-hover:scale-110 transition-transform`}>
+                  <tech.icon className="w-5 h-5" />
+                </div>
+                <div className="font-bold text-slate-900 text-sm">{tech.name}</div>
+                <div className="text-[11px] text-slate-500">{tech.desc}</div>
               </div>
             ))}
+
           </div>
 
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="py-12 border-t border-slate-800/80 bg-[#030712] relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6 text-xs text-slate-400">
-          <div className="flex items-center gap-3">
-            <ShieldCheck className="w-5 h-5 text-cyan-400" />
-            <span className="font-bold text-white">TrustExam Platform</span>
-            <span>© 2026 TrustExam. All rights reserved.</span>
+      {/* ARCHITECTURE SECTION */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
+            <span className="text-xs font-bold uppercase tracking-widest text-blue-600">SYSTEM FLOW</span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+              Application Architecture
+            </h2>
+            <p className="text-slate-600 text-base">
+              End-to-end data flow designed for low latency, secure authentication, and cloud scalability.
+            </p>
           </div>
 
-          <div className="flex items-center gap-2 font-mono text-slate-300">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>All Anti-Cheat Systems Operational</span>
+          <div className="max-w-5xl mx-auto">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4 items-center">
+              
+              {/* Step 1 */}
+              <div className="p-5 bg-blue-50/80 rounded-2xl border border-blue-200 text-center space-y-2 relative">
+                <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center mx-auto">
+                  1
+                </div>
+                <h4 className="font-bold text-slate-900 text-sm">Frontend</h4>
+                <p className="text-xs text-blue-700 font-medium">React + Vite + Tailwind</p>
+              </div>
+
+              {/* Arrow */}
+              <div className="hidden lg:flex items-center justify-center text-blue-400">
+                <ChevronRight className="w-6 h-6" />
+              </div>
+
+              {/* Step 2 */}
+              <div className="p-5 bg-sky-50/80 rounded-2xl border border-sky-200 text-center space-y-2">
+                <div className="w-8 h-8 rounded-full bg-sky-600 text-white font-bold text-xs flex items-center justify-center mx-auto">
+                  2
+                </div>
+                <h4 className="font-bold text-slate-900 text-sm">REST API</h4>
+                <p className="text-xs text-sky-700 font-medium">JSON Payloads & JWT</p>
+              </div>
+
+              {/* Arrow */}
+              <div className="hidden lg:flex items-center justify-center text-sky-400">
+                <ChevronRight className="w-6 h-6" />
+              </div>
+
+              {/* Step 3 */}
+              <div className="p-5 bg-indigo-50/80 rounded-2xl border border-indigo-200 text-center space-y-2">
+                <div className="w-8 h-8 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center mx-auto">
+                  3
+                </div>
+                <h4 className="font-bold text-slate-900 text-sm">Node + Express</h4>
+                <p className="text-xs text-indigo-700 font-medium">Controller & Middleware</p>
+              </div>
+
+            </div>
+
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 items-center pt-8 max-w-3xl mx-auto">
+              {/* Step 4 */}
+              <div className="p-5 bg-emerald-50/80 rounded-2xl border border-emerald-200 text-center space-y-2">
+                <div className="w-8 h-8 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center mx-auto">
+                  4
+                </div>
+                <h4 className="font-bold text-slate-900 text-sm">MongoDB Atlas</h4>
+                <p className="text-xs text-emerald-700 font-medium">Cloud Database Store</p>
+              </div>
+
+              {/* Arrow */}
+              <div className="hidden lg:flex items-center justify-center text-emerald-400">
+                <ChevronRight className="w-6 h-6 rotate-90 sm:rotate-0" />
+              </div>
+
+              {/* Step 5 */}
+              <div className="p-5 bg-slate-100 rounded-2xl border border-slate-300 text-center space-y-2">
+                <div className="w-8 h-8 rounded-full bg-slate-800 text-white font-bold text-xs flex items-center justify-center mx-auto">
+                  5
+                </div>
+                <h4 className="font-bold text-slate-900 text-sm">Docker Container</h4>
+                <p className="text-xs text-slate-600 font-medium">Vercel & Render Cloud</p>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* STATISTICS SECTION */}
+      <section className="py-16 bg-blue-600 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 text-center">
+            
+            <div className="space-y-1">
+              <div className="text-3xl sm:text-4xl font-extrabold tracking-tight font-mono">500+</div>
+              <div className="text-xs sm:text-sm font-medium text-blue-100">Exams Conducted</div>
+            </div>
+
+            <div className="space-y-1">
+              <div className="text-3xl sm:text-4xl font-extrabold tracking-tight font-mono">1000+</div>
+              <div className="text-xs sm:text-sm font-medium text-blue-100">Students</div>
+            </div>
+
+            <div className="space-y-1">
+              <div className="text-3xl sm:text-4xl font-extrabold tracking-tight font-mono">99.9%</div>
+              <div className="text-xs sm:text-sm font-medium text-blue-100">System Uptime</div>
+            </div>
+
+            <div className="space-y-1">
+              <div className="text-3xl sm:text-4xl font-extrabold tracking-tight font-mono">15+</div>
+              <div className="text-xs sm:text-sm font-medium text-blue-100">REST APIs</div>
+            </div>
+
+            <div className="col-span-2 md:col-span-1 space-y-1">
+              <div className="text-3xl sm:text-4xl font-extrabold tracking-tight font-mono">100%</div>
+              <div className="text-xs sm:text-sm font-medium text-blue-100">Responsive</div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* SECURITY SECTION */}
+      <section className="py-20 bg-slate-50/60 border-b border-slate-200/60">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
+            <span className="text-xs font-bold uppercase tracking-widest text-blue-600">ENTERPRISE SECURITY</span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+              Multi-Layer Protection
+            </h2>
+            <p className="text-slate-600 text-base">
+              Engineered with modern security protocols to ensure complete data protection and exam integrity.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 text-left">
+            
+            <div className="p-6 bg-white rounded-2xl border border-slate-200/80 shadow-soft-sm flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+                <Key className="w-5 h-5" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="font-bold text-slate-900 text-base">JWT Authentication</h4>
+                <p className="text-xs text-slate-600">Stateless, encrypted session token authorization across endpoints.</p>
+              </div>
+            </div>
+
+            <div className="p-6 bg-white rounded-2xl border border-slate-200/80 shadow-soft-sm flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="font-bold text-slate-900 text-base">Role Based Access</h4>
+                <p className="text-xs text-slate-600">Strict permission checks isolating Student, Faculty, and Admin controls.</p>
+              </div>
+            </div>
+
+            <div className="p-6 bg-white rounded-2xl border border-slate-200/80 shadow-soft-sm flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+                <ShieldAlert className="w-5 h-5" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="font-bold text-slate-900 text-base">Input Validation</h4>
+                <p className="text-xs text-slate-600">Sanitized user payloads preventing injection vulnerabilities.</p>
+              </div>
+            </div>
+
+            <div className="p-6 bg-white rounded-2xl border border-slate-200/80 shadow-soft-sm flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+                <Lock className="w-5 h-5" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="font-bold text-slate-900 text-base">Protected APIs</h4>
+                <p className="text-xs text-slate-600">Middleware guards blocking unauthenticated API access.</p>
+              </div>
+            </div>
+
+            <div className="p-6 bg-white rounded-2xl border border-slate-200/80 shadow-soft-sm flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+                <Database className="w-5 h-5" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="font-bold text-slate-900 text-base">MongoDB Atlas</h4>
+                <p className="text-xs text-slate-600">Encrypted cloud database storage with automated backups.</p>
+              </div>
+            </div>
+
+            <div className="p-6 bg-white rounded-2xl border border-slate-200/80 shadow-soft-sm flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+                <Boxes className="w-5 h-5" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="font-bold text-slate-900 text-base">Docker Containers</h4>
+                <p className="text-xs text-slate-600">Isolated execution environment ensuring repeatable deployments.</p>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* CALL TO ACTION */}
+      <section className="py-20 bg-gradient-to-b from-white via-blue-50/50 to-blue-50">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="p-10 sm:p-14 bg-white rounded-3xl border border-blue-100 shadow-soft-xl space-y-6">
+            
+            <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center mx-auto shadow-lg shadow-blue-500/30">
+              <ShieldCheck className="w-7 h-7" />
+            </div>
+
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+              Ready to Experience Secure Online Exams?
+            </h2>
+
+            <p className="text-slate-600 text-base max-w-xl mx-auto">
+              Join thousands of students and faculty members conducting exams with 100% integrity, real-time monitoring, and instant reporting.
+            </p>
+
+            <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
+              <button
+                onClick={() => setIsDemoModalOpen(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3.5 rounded-xl font-semibold text-sm shadow-lg shadow-blue-600/25 hover:shadow-xl hover:shadow-blue-600/35 hover:-translate-y-0.5 transition-all flex items-center gap-2"
+              >
+                <Play className="w-4 h-4 fill-current" />
+                Launch Demo
+              </button>
+
+              <a
+                href="https://github.com/arvi8080/TrustExam"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-slate-900 hover:bg-slate-800 text-white px-8 py-3.5 rounded-xl font-semibold text-sm shadow-soft-md hover:shadow-soft-lg transition-all flex items-center gap-2"
+              >
+                <GithubIcon className="w-4 h-4" />
+                GitHub Repository
+              </a>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* CONTACT & FOOTER */}
+      <footer id="contact" className="bg-slate-900 text-slate-300 pt-16 pb-12 border-t border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-12 gap-10 pb-12 border-b border-slate-800 text-left">
+            
+            {/* Column 1: Brand */}
+            <div className="md:col-span-5 space-y-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <span className="text-xl font-bold tracking-tight text-white">
+                  Trust<span className="text-blue-500">Exam</span>
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 max-w-sm leading-relaxed">
+                Full-stack secure online examination platform with AI proctoring, role-based controls, and real-time monitoring. Built for universities, colleges, and software engineering portfolios.
+              </p>
+              
+              <div className="flex items-center gap-3 pt-2">
+                <a 
+                  href="https://github.com/arvi8080/TrustExam" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-blue-600 text-slate-300 hover:text-white flex items-center justify-center transition-colors"
+                >
+                  <GithubIcon className="w-4 h-4" />
+                </a>
+                <a 
+                  href="https://linkedin.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-blue-600 text-slate-300 hover:text-white flex items-center justify-center transition-colors"
+                >
+                  <LinkedinIcon className="w-4 h-4" />
+                </a>
+                <a 
+                  href="mailto:support@trustexam.com" 
+                  className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-blue-600 text-slate-300 hover:text-white flex items-center justify-center transition-colors"
+                >
+                  <Mail className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
+
+            {/* Column 2: Quick Links */}
+            <div className="md:col-span-4 space-y-3">
+              <h4 className="text-sm font-bold text-white uppercase tracking-wider">Quick Links</h4>
+              <ul className="space-y-2 text-xs text-slate-400">
+                <li><button onClick={() => scrollToSection('features')} className="hover:text-white transition-colors">Features</button></li>
+                <li><button onClick={() => scrollToSection('technology')} className="hover:text-white transition-colors">Technology</button></li>
+                <li><button onClick={() => scrollToSection('about')} className="hover:text-white transition-colors">About</button></li>
+                <li><a href="https://github.com/arvi8080/TrustExam" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GitHub Repository</a></li>
+                <li><button onClick={() => scrollToSection('contact')} className="hover:text-white transition-colors">Contact Support</button></li>
+              </ul>
+            </div>
+
+            {/* Column 3: Contact Info */}
+            <div className="md:col-span-3 space-y-3">
+              <h4 className="text-sm font-bold text-white uppercase tracking-wider">Contact Us</h4>
+              <div className="space-y-2 text-xs text-slate-400">
+                <p>Email: <a href="mailto:support@trustexam.com" className="text-blue-400 hover:underline">support@trustexam.com</a></p>
+                <p>Status: <span className="text-emerald-400 font-semibold">All Systems Operational</span></p>
+                <p>Version: <span className="font-mono text-slate-300">v2.0 Docker Ready</span></p>
+              </div>
+            </div>
+
+          </div>
+
+          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
+            <div>© 2026 TrustExam. Built for Quality Education (UN SDG Goal 4).</div>
+            <div className="flex gap-6">
+              <button onClick={() => navigate('/login')} className="hover:text-slate-300">Sign In</button>
+              <a href="https://github.com/arvi8080/TrustExam" target="_blank" rel="noopener noreferrer" className="hover:text-slate-300">Open Source</a>
+            </div>
           </div>
         </div>
       </footer>
+
+      {/* LIVE DEMO INTERACTIVE MODAL */}
+      {isDemoModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-soft-xl max-w-lg w-full p-6 space-y-6 text-left relative">
+            
+            <button
+              onClick={() => setIsDemoModalOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full">
+                <Play className="w-3 h-3 fill-current" /> Live Exam Sample Demo
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">Try TrustExam Question Interface</h3>
+            </div>
+
+            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3 text-xs">
+              <div className="flex justify-between text-slate-500 font-medium">
+                <span>Subject: CS301 Algorithms</span>
+                <span className="text-emerald-600 font-semibold font-mono">Timer: 00:04:59</span>
+              </div>
+              
+              <p className="font-semibold text-slate-800 text-sm">
+                Which data structure best guarantees O(1) average time complexity for key lookup operations?
+              </p>
+
+              <div className="space-y-2 pt-1">
+                {[
+                  'A. Hash Table with Uniform Hashing',
+                  'B. Binary Search Tree',
+                  'C. Doubly Linked List',
+                  'D. Min-Heap'
+                ].map((option, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setDemoSelectedAnswer(idx)}
+                    className={`w-full p-3 rounded-lg border text-left font-medium transition-all ${
+                      demoSelectedAnswer === idx
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                        : 'bg-white text-slate-700 border-slate-200 hover:border-blue-300'
+                    }`}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {demoSubmitted ? (
+              <div className="p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold rounded-xl flex items-center justify-between">
+                <span>✓ Exam submitted successfully! Integrity Score: 100%</span>
+                <button 
+                  onClick={() => {
+                    setIsDemoModalOpen(false);
+                    navigate('/login');
+                  }}
+                  className="bg-emerald-600 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-emerald-700"
+                >
+                  Go to Login
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  onClick={() => setIsDemoModalOpen(false)}
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => setDemoSubmitted(true)}
+                  disabled={demoSelectedAnswer === null}
+                  className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-5 py-2 rounded-xl text-xs font-semibold shadow-md shadow-blue-600/20"
+                >
+                  Submit Sample Exam
+                </button>
+              </div>
+            )}
+
+          </div>
+        </div>
+      )}
 
     </div>
   );

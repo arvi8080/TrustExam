@@ -71,13 +71,15 @@ const Exam = () => {
     const handleBeforeUnload = (e) => {
       if (!isSubmitted) {
         // Send a synchronous request to auto-submit before page unloads
-        navigator.sendBeacon(`http://localhost:5001/api/student/exams/${examId}/auto-submit`, JSON.stringify({
+        const payload = JSON.stringify({
           answers: Object.entries(answers).map(([question, selectedAnswer]) => ({
             question,
             selectedAnswer
           })),
           reason: 'browser_closed'
-        }));
+        });
+        const blob = new Blob([payload], { type: 'application/json' });
+        navigator.sendBeacon(`http://localhost:5001/api/student/exams/${examId}/auto-submit`, blob);
         e.preventDefault();
         e.returnValue = '';
       }
@@ -329,7 +331,7 @@ const Exam = () => {
 
   const getQuestionStatus = (index) => {
     const question = questions[index];
-    if (answers[question?._id]) return 'answered';
+    if (answers[question?._id] !== undefined) return 'answered';
     return 'not-answered';
   };
 
@@ -545,9 +547,9 @@ const Exam = () => {
                       <input
                         type="radio"
                         name={`question-${currentQuestion._id}`}
-                        value={option}
-                        checked={answers[currentQuestion._id] === option}
-                        onChange={() => handleAnswerChange(currentQuestion._id, option)}
+                        value={index}
+                        checked={answers[currentQuestion._id] === index}
+                        onChange={() => handleAnswerChange(currentQuestion._id, index)}
                         className="w-4 h-4 text-blue-600 focus:ring-blue-500"
                       />
                       <span className="text-gray-700">{option}</span>

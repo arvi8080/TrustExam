@@ -273,12 +273,12 @@ router.post('/exams/:examId/submit', validateExamId, analyzeBehavior, async (req
 
     const activeQuestions = exam.questions.filter(q => q.isActive);
     activeQuestions.forEach((question, index) => {
-      const selectedAnswer = answers[index];
-      const isCorrect = selectedAnswer === question.correctAnswer;
+      const selectedAnswer = extractSelectedAnswer(answers, question, index);
+      const isCorrect = selectedAnswer !== -1 && selectedAnswer === question.correctAnswer;
 
       if (isCorrect) {
         score += question.marks;
-      } else if (exam.negativeMarking > 0) {
+      } else if (exam.negativeMarking > 0 && selectedAnswer !== -1) {
         score -= exam.negativeMarking;
       }
 
@@ -654,12 +654,12 @@ router.post('/exams/:examId/auto-submit', validateExamId, analyzeBehavior, async
 
     const activeQuestions = exam.questions.filter(q => q.isActive);
     activeQuestions.forEach((question, index) => {
-      const selectedAnswer = answers[index];
-      const isCorrect = selectedAnswer === question.correctAnswer;
+      const selectedAnswer = extractSelectedAnswer(answers, question, index);
+      const isCorrect = selectedAnswer !== -1 && selectedAnswer === question.correctAnswer;
 
       if (isCorrect) {
         score += question.marks;
-      } else if (exam.negativeMarking > 0) {
+      } else if (exam.negativeMarking > 0 && selectedAnswer !== -1) {
         score -= exam.negativeMarking;
       }
 
@@ -705,5 +705,90 @@ router.post('/exams/:examId/auto-submit', validateExamId, analyzeBehavior, async
     res.status(500).json({ error: error.message });
   }
 });
+
+// Helper function to extract selected answer cleanly from various payload formats
+function extractSelectedAnswer(answers, question, index) {
+  let selectedAnswer = undefined;
+
+  if (Array.isArray(answers)) {
+    const item = answers[index];
+    if (typeof item === 'number') {
+      selectedAnswer = item;
+    } else if (item && typeof item === 'object') {
+      if (item.selectedAnswer !== undefined) {
+        selectedAnswer = Number(item.selectedAnswer);
+      }
+    }
+
+    if (selectedAnswer === undefined || isNaN(selectedAnswer)) {
+      const match = answers.find(a => a && typeof a === 'object' && (String(a.question) === String(question._id) || String(a.question) === String(index)));
+      if (match && match.selectedAnswer !== undefined) {
+        selectedAnswer = Number(match.selectedAnswer);
+      }
+    }
+  } else if (answers && typeof answers === 'object') {
+    if (answers[question._id] !== undefined) {
+      selectedAnswer = Number(answers[question._id]);
+    } else if (answers[index] !== undefined) {
+      selectedAnswer = Number(answers[index]);
+    }
+  }
+
+  if (selectedAnswer === undefined || isNaN(selectedAnswer)) {
+    return -1;
+  }
+
+  return selectedAnswer;
+}
+
+// Helper function to evaluate and award badges based on student performance
+async function checkAndAwardBadges(userId, result) {
+  try {
+    const badges = await Badge.find({ isActive: true });
+    if (!badges || badges.length === 0) return;
+
+    const userResults = await Result.find({ student: userId, isCompleted: true });
+    const userAchievements = await Achievement.find({ user: userId });
+    const earnedBadgeIds = new Set(userAchievements.map(a => a.badge.toString()));
+
+    for (const badge of badges) {
+      if (earnedBadgeIds.has(badge._id.toString())) continue;
+
+      let awarded = false;
+      const { type, value, operator } = badge.criteria || {};
+
+      const checkCondition = (actual, target, op = 'gte') => {
+        if (op === 'gte') return actual >= target;
+        if (op === 'lte') return actual <= target;
+        if (op === 'eq') return actual === target;
+        return actual >= target;
+      };
+
+      if (type === 'score_threshold' && result) {
+        if (checkCondition(result.percentage || 0, value, operator)) awarded = true;
+      } else if (type === 'perfect_exam' && result) {
+        if (result.percentage === 100) awarded = true;
+      } else if (type === 'no_cheating' && result) {
+        if ((result.antiCheatingLog?.tabSwitches || 0) === 0 && checkCondition(result.percentage || 0, value, operator)) awarded = true;
+      } else if (type === 'exam_count') {
+        if (checkCondition(userResults.length, value, operator)) awarded = true;
+      } else if (type === 'trust_score') {
+        const user = await User.findById(userId);
+        if (user && checkCondition(user.trustScore || 100, value, operator)) awarded = true;
+      }
+
+      if (awarded) {
+        await new Achievement({
+          user: userId,
+          badge: badge._id,
+          earnedAt: new Date(),
+          progress: 100
+        }).save();
+      }
+    }
+  } catch (err) {
+    console.error('Error checking and awarding badges:', err);
+  }
+}
 
 module.exports = router;

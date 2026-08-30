@@ -168,8 +168,7 @@ router.post('/exams/:examId/questions/bulk-upload', uploadMiddleware.single('fil
             difficulty: 'medium',
             marks: 1
           });
-          result.question = question;
-          results.push({ row: index + 2, success: true });
+          results.push({ row: index + 2, success: true, question });
         });
     } else if (ext === '.xlsx') {
       const XLSX = require('xlsx');
@@ -201,8 +200,7 @@ router.post('/exams/:examId/questions/bulk-upload', uploadMiddleware.single('fil
           difficulty: 'medium',
           marks: 1
         });
-        result.question = question;
-        results.push({ row: index + 2, success: true });
+        results.push({ row: index + 2, success: true, question });
       });
     } else {
       return res.status(400).json({ error: 'Unsupported file type. Use CSV or XLSX' });

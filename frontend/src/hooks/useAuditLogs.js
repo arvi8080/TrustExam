@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
 
 export const useAuditLogs = () => {
   const [auditLogs, setAuditLogs] = useState([]);
@@ -10,7 +11,7 @@ export const useAuditLogs = () => {
       setLoading(true);
       setError(null);
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5001/api/admin/audit-logs', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/audit-logs`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

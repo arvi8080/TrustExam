@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 
 const Exam = () => {
   const { examId } = useParams();
@@ -79,7 +80,7 @@ const Exam = () => {
           reason: 'browser_closed'
         });
         const blob = new Blob([payload], { type: 'application/json' });
-        navigator.sendBeacon(`http://localhost:5001/api/student/exams/${examId}/auto-submit`, blob);
+        navigator.sendBeacon(`${API_BASE_URL}/api/student/exams/${examId}/auto-submit`, blob);
         e.preventDefault();
         e.returnValue = '';
       }
@@ -119,7 +120,7 @@ const Exam = () => {
   const reportViolation = async (count, activities = ['tab_switch']) => {
     try {
       const token = localStorage.getItem('token');
-      await fetch(`http://localhost:5001/api/student/exams/${examId}/anti-cheating`, {
+      await fetch(`${API_BASE_URL}/api/student/exams/${examId}/anti-cheating`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -185,7 +186,7 @@ const Exam = () => {
         selectedAnswer
       }));
 
-      const response = await fetch(`http://localhost:5001/api/student/exams/${examId}/auto-submit`, {
+      const response = await fetch(`${API_BASE_URL}/api/student/exams/${examId}/auto-submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -210,7 +211,7 @@ const Exam = () => {
       const token = localStorage.getItem('token');
 
       // Fetch exam details only (not questions yet)
-      const examResponse = await fetch(`http://localhost:5001/api/student/exams/${examId}`, {
+      const examResponse = await fetch(`${API_BASE_URL}/api/student/exams/${examId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -232,7 +233,7 @@ const Exam = () => {
     try {
       const token = localStorage.getItem('token');
 
-      const response = await fetch(`http://localhost:5001/api/student/exams/${examId}/start`, {
+      const response = await fetch(`${API_BASE_URL}/api/student/exams/${examId}/start`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -299,7 +300,7 @@ const Exam = () => {
         selectedAnswer
       }));
 
-      const response = await fetch(`http://localhost:5001/api/student/exams/${examId}/submit`, {
+      const response = await fetch(`${API_BASE_URL}/api/student/exams/${examId}/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -338,7 +339,7 @@ const Exam = () => {
   const loadProgress = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5001/api/student/exams/${examId}/progress`, {
+      const response = await fetch(`${API_BASE_URL}/api/student/exams/${examId}/progress`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -360,7 +361,7 @@ const Exam = () => {
   const saveProgress = async (currentAnswers, currentIndex) => {
     try {
       const token = localStorage.getItem('token');
-      await fetch(`http://localhost:5001/api/student/exams/${examId}/save-progress`, {
+      await fetch(`${API_BASE_URL}/api/student/exams/${examId}/save-progress`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

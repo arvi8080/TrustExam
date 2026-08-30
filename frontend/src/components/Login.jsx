@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE_URL } from '../config';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -43,7 +44,7 @@ const Login = () => {
     try {
       const endpoint = isRegistering ? '/api/auth/register' : '/api/auth/login';
       const bodyData = isRegistering ? formData : { email: formData.email, password: formData.password };
-      const response = await fetch(`http://localhost:5001${endpoint}`, {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

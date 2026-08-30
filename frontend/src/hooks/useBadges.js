@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
 
 export const useBadges = () => {
   const [badges, setBadges] = useState([]);
@@ -11,7 +12,7 @@ export const useBadges = () => {
       setLoading(true);
       setError(null);
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5001/api/admin/badges', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/badges`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -29,7 +30,7 @@ export const useBadges = () => {
   const fetchAchievements = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5001/api/admin/achievements', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/achievements`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -44,7 +45,7 @@ export const useBadges = () => {
   const createBadge = async (badgeData) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5001/api/admin/badges', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/badges`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -67,7 +68,7 @@ export const useBadges = () => {
   const updateBadge = async (badgeId, badgeData) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5001/api/admin/badges/${badgeId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/badges/${badgeId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -88,7 +89,7 @@ export const useBadges = () => {
   const deleteBadge = async (badgeId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5001/api/admin/badges/${badgeId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/badges/${badgeId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

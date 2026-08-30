@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
 
 export const useActiveSessions = (selectedExam) => {
   const [activeSessions, setActiveSessions] = useState([]);
@@ -14,7 +15,7 @@ export const useActiveSessions = (selectedExam) => {
         setActiveSessions([]);
         return;
       }
-      const response = await fetch(`http://localhost:5001/api/admin/exams/${selectedExam}/active-sessions`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/exams/${selectedExam}/active-sessions`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

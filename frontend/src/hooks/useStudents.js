@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
 
 export const useStudents = () => {
   const [students, setStudents] = useState([]);
@@ -10,7 +11,7 @@ export const useStudents = () => {
       setLoading(true);
       setError(null);
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5001/api/admin/students', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/students`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -28,7 +29,7 @@ export const useStudents = () => {
   const blockStudent = async (studentId, isBlocked) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5001/api/admin/students/${studentId}/block`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/students/${studentId}/block`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -48,7 +49,7 @@ export const useStudents = () => {
   const updateStudent = async (studentId, updates) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5001/api/admin/students/${studentId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/students/${studentId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -68,7 +69,7 @@ export const useStudents = () => {
   const deleteStudent = async (studentId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5001/api/admin/students/${studentId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/students/${studentId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

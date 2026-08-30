@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
 
 export const useExams = () => {
   const [exams, setExams] = useState([]);
@@ -10,7 +11,7 @@ export const useExams = () => {
       setLoading(true);
       setError(null);
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5001/api/admin/exams', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/exams`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -34,7 +35,7 @@ export const useExams = () => {
   const createExam = async (examData) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5001/api/admin/exams', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/exams`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -55,7 +56,7 @@ export const useExams = () => {
   const updateExam = async (examId, examData) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5001/api/admin/exams/${examId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/exams/${examId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -76,7 +77,7 @@ export const useExams = () => {
   const deleteExam = async (examId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5001/api/admin/exams/${examId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/exams/${examId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

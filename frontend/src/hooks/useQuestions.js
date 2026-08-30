@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { API_BASE_URL } from '../config';
 
 export const useQuestions = () => {
   const [questions, setQuestions] = useState([]);
@@ -10,7 +11,7 @@ export const useQuestions = () => {
       setLoading(true);
       setError(null);
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5001/api/admin/exams/${examId}/questions`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/exams/${examId}/questions`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -28,7 +29,7 @@ export const useQuestions = () => {
   const createQuestion = async (examId, questionData) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5001/api/admin/exams/${examId}/questions`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/exams/${examId}/questions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -52,7 +53,7 @@ export const useQuestions = () => {
   const deleteQuestion = async (questionId, examId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5001/api/admin/questions/${questionId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/questions/${questionId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -76,7 +77,7 @@ export const useQuestions = () => {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch(`http://localhost:5001/api/admin/exams/${examId}/questions/bulk-upload`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/exams/${examId}/questions/bulk-upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -101,7 +102,7 @@ export const useQuestions = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5001/api/admin/ai/generate-questions', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/ai/generate-questions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -128,7 +129,7 @@ export const useQuestions = () => {
   const updateQuestion = async (questionId, questionData, examId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5001/api/admin/questions/${questionId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/questions/${questionId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

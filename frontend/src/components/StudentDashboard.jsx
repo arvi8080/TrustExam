@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 
 // Enhanced Results Modal Component
 const ResultsModal = ({ result, onClose }) => {
@@ -15,7 +16,7 @@ const ResultsModal = ({ result, onClose }) => {
     try {
       const token = localStorage.getItem('token');
       if (!result?.exam?._id) return;
-      const response = await fetch(`http://localhost:5001/api/student/exams/${result.exam._id}/rank`, {
+      const response = await fetch(`${API_BASE_URL}/api/student/exams/${result.exam._id}/rank`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -39,7 +40,7 @@ const ResultsModal = ({ result, onClose }) => {
 
       console.log('Downloading PDF for result ID:', result._id);
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5001/api/student/results/${result._id}/pdf`, {
+      const response = await fetch(`${API_BASE_URL}/api/student/results/${result._id}/pdf`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -237,7 +238,7 @@ const StudentDashboard = () => {
         setLoading(false);
         return;
       }
-      const response = await fetch('http://localhost:5001/api/student/exams', {
+      const response = await fetch(`${API_BASE_URL}/api/student/exams`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -274,7 +275,7 @@ const StudentDashboard = () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const response = await fetch('http://localhost:5001/api/student/results', {
+      const response = await fetch(`${API_BASE_URL}/api/student/results`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -296,7 +297,7 @@ const StudentDashboard = () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const response = await fetch('http://localhost:5001/api/student/achievements', {
+      const response = await fetch(`${API_BASE_URL}/api/student/achievements`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -318,7 +319,7 @@ const StudentDashboard = () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const response = await fetch('http://localhost:5001/api/student/profile', {
+      const response = await fetch(`${API_BASE_URL}/api/student/profile`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -353,7 +354,7 @@ const StudentDashboard = () => {
     setUpdatingProfile(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5001/api/student/profile', {
+      const response = await fetch(`${API_BASE_URL}/api/student/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

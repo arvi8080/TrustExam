@@ -42,20 +42,23 @@ const connectDB = async () => {
 
 // Ensure Database is connected before serving requests
 app.use(async (req, res, next) => {
-  if (req.path.startsWith('/api')) {
-    try {
-      await connectDB();
-    } catch (dbErr) {
-      return res.status(500).json({ message: dbErr.message });
-    }
+  try {
+    await connectDB();
+  } catch (dbErr) {
+    return res.status(500).json({ message: dbErr.message });
   }
   next();
 });
 
-// Routes
+// Routes (Supported with or without /api prefix for Vercel serverless)
 app.use('/api/auth', authRoutes);
+app.use('/auth', authRoutes);
+
 app.use('/api/admin', adminRoutes);
+app.use('/admin', adminRoutes);
+
 app.use('/api/student', studentRoutes);
+app.use('/student', studentRoutes);
 
 // Global error handling middleware
 app.use((err, req, res, next) => {

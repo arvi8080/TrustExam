@@ -92,15 +92,6 @@ const LandingPage = () => {
             <button onClick={() => scrollToSection('about')} className="hover:text-blue-600 transition-colors">About</button>
             <button onClick={() => scrollToSection('technology')} className="hover:text-blue-600 transition-colors">Technology</button>
             <button onClick={() => scrollToSection('contact')} className="hover:text-blue-600 transition-colors">Contact</button>
-            <a 
-              href="https://github.com/arvi8080/TrustExam" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 hover:text-blue-600 transition-colors"
-            >
-              <GithubIcon className="w-4 h-4" />
-              <span>GitHub</span>
-            </a>
           </div>
 
           {/* Action Button */}

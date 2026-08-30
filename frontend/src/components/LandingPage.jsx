@@ -90,7 +90,7 @@ const LandingPage = () => {
             <button onClick={() => scrollToSection('home')} className="hover:text-blue-600 transition-colors">Home</button>
             <button onClick={() => scrollToSection('features')} className="hover:text-blue-600 transition-colors">Features</button>
             <button onClick={() => scrollToSection('about')} className="hover:text-blue-600 transition-colors">About</button>
-            <button onClick={() => scrollToSection('technology')} className="hover:text-blue-600 transition-colors">Technology</button>
+            <button onClick={() => scrollToSection('security')} className="hover:text-blue-600 transition-colors">Security</button>
             <button onClick={() => scrollToSection('contact')} className="hover:text-blue-600 transition-colors">Contact</button>
           </div>
 
@@ -559,43 +559,69 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* TECHNOLOGY SECTION */}
-      <section id="technology" className="py-20 bg-slate-50/60 border-t border-slate-200/60">
+      {/* SECURITY & INTEGRITY SECTION */}
+      <section id="security" className="py-20 bg-slate-50/60 border-t border-slate-200/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
-            <span className="text-xs font-bold uppercase tracking-widest text-blue-600">TECHNOLOGY STACK</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-blue-600">SECURITY & INTEGRITY ENGINE</span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-              Built with Modern Technologies
+              Enterprise Anti-Cheating & Exam Protection
             </h2>
             <p className="text-slate-600 text-base">
-              A robust, scalable tech stack engineered for reliability, security, and developer efficiency.
+              TrustExam is engineered with multi-layered proctoring, real-time event tracking, and dynamic integrity scoring to guarantee exam credibility.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             
             {[
-              { name: 'React', desc: 'Frontend UI', icon: Code2, color: 'text-sky-500 bg-sky-50' },
-              { name: 'Node.js', desc: 'Backend Runtime', icon: Server, color: 'text-emerald-600 bg-emerald-50' },
-              { name: 'Express.js', desc: 'REST API Framework', icon: Layers, color: 'text-slate-700 bg-slate-100' },
-              { name: 'MongoDB', desc: 'Database Store', icon: Database, color: 'text-emerald-600 bg-emerald-50' },
-              { name: 'JWT', desc: 'Security Tokens', icon: Key, color: 'text-amber-600 bg-amber-50' },
-              { name: 'Docker', desc: 'Containerization', icon: Boxes, color: 'text-blue-600 bg-blue-50' },
-              { name: 'Tailwind CSS', desc: 'Utility Styling', icon: Sparkles, color: 'text-cyan-500 bg-cyan-50' },
-              { name: 'Vercel', desc: 'Frontend Hosting', icon: Cloud, color: 'text-slate-900 bg-slate-100' },
-              { name: 'Render', desc: 'Backend Hosting', icon: HardDrive, color: 'text-indigo-600 bg-indigo-50' },
-              { name: 'GitHub', desc: 'Source Control', icon: GithubIcon, color: 'text-slate-800 bg-slate-100' }
-            ].map((tech, idx) => (
+              {
+                title: 'Tab & Window Switch Tracking',
+                desc: 'Detects visibility loss and window focus shifts with automated threshold warnings and automatic exam submission.',
+                icon: Eye,
+                color: 'text-blue-600 bg-blue-50 border-blue-200'
+              },
+              {
+                title: 'IP & Session Restriction',
+                desc: 'Enforces single-session IP binding and prevents concurrent attempts or unauthorized proxy access.',
+                icon: Lock,
+                color: 'text-indigo-600 bg-indigo-50 border-indigo-200'
+              },
+              {
+                title: 'Dynamic Trust Score Index',
+                desc: 'Computes student integrity scores (0-100) dynamically based on violation logs and historical compliance.',
+                icon: ShieldCheck,
+                color: 'text-emerald-600 bg-emerald-50 border-emerald-200'
+              },
+              {
+                title: 'Shortcut & Copy Protection',
+                desc: 'Disables right-click context menus, clipboard copy/paste, and developer tool shortcuts during active exams.',
+                icon: ShieldAlert,
+                color: 'text-amber-600 bg-amber-50 border-amber-200'
+              },
+              {
+                title: 'Targeted Student Whitelisting',
+                desc: 'Restricts exam eligibility to whitelisted institutional email lists with role-based JWT authorization.',
+                icon: UserCheck,
+                color: 'text-purple-600 bg-purple-50 border-purple-200'
+              },
+              {
+                title: 'Automated Unload Auto-Submit',
+                desc: 'Background beacon auto-submission ensures answers are safely locked if browser tab is unexpectedly closed.',
+                icon: Clock,
+                color: 'text-sky-600 bg-sky-50 border-sky-200'
+              }
+            ].map((feature, idx) => (
               <div 
                 key={idx}
-                className="p-5 bg-white rounded-2xl border border-slate-200/80 shadow-soft-sm hover:shadow-soft-md hover:-translate-y-1 transition-all text-center space-y-2 group"
+                className="p-6 bg-white rounded-2xl border border-slate-200/80 shadow-soft-sm hover:shadow-soft-md hover:-translate-y-1 transition-all space-y-3 group"
               >
-                <div className={`w-10 h-10 rounded-xl mx-auto flex items-center justify-center ${tech.color} group-hover:scale-110 transition-transform`}>
-                  <tech.icon className="w-5 h-5" />
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center border ${feature.color} group-hover:scale-110 transition-transform`}>
+                  <feature.icon className="w-6 h-6" />
                 </div>
-                <div className="font-bold text-slate-900 text-sm">{tech.name}</div>
-                <div className="text-[11px] text-slate-500">{tech.desc}</div>
+                <h3 className="font-bold text-slate-900 text-lg">{feature.title}</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">{feature.desc}</p>
               </div>
             ))}
 
@@ -896,9 +922,8 @@ const LandingPage = () => {
               <h4 className="text-sm font-bold text-white uppercase tracking-wider">Quick Links</h4>
               <ul className="space-y-2 text-xs text-slate-400">
                 <li><button onClick={() => scrollToSection('features')} className="hover:text-white transition-colors">Features</button></li>
-                <li><button onClick={() => scrollToSection('technology')} className="hover:text-white transition-colors">Technology</button></li>
-                <li><button onClick={() => scrollToSection('about')} className="hover:text-white transition-colors">About</button></li>
-                <li><a href="https://github.com/arvi8080/TrustExam" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GitHub Repository</a></li>
+                <li><button onClick={() => scrollToSection('security')} className="hover:text-white transition-colors">Security Engine</button></li>
+                <li><button onClick={() => scrollToSection('about')} className="hover:text-white transition-colors">About Platform</button></li>
                 <li><button onClick={() => scrollToSection('contact')} className="hover:text-white transition-colors">Contact Support</button></li>
               </ul>
             </div>
@@ -909,7 +934,7 @@ const LandingPage = () => {
               <div className="space-y-2 text-xs text-slate-400">
                 <p>Email: <a href="mailto:support@trustexam.com" className="text-blue-400 hover:underline">support@trustexam.com</a></p>
                 <p>Status: <span className="text-emerald-400 font-semibold">All Systems Operational</span></p>
-                <p>Version: <span className="font-mono text-slate-300">v2.0 Docker Ready</span></p>
+                <p>Version: <span className="font-mono text-slate-300">v2.0 Enterprise Ready</span></p>
               </div>
             </div>
 
@@ -919,7 +944,7 @@ const LandingPage = () => {
             <div>© 2026 TrustExam. Built for Quality Education (UN SDG Goal 4).</div>
             <div className="flex gap-6">
               <button onClick={() => navigate('/login')} className="hover:text-slate-300">Sign In</button>
-              <a href="https://github.com/arvi8080/TrustExam" target="_blank" rel="noopener noreferrer" className="hover:text-slate-300">Open Source</a>
+              <button onClick={() => scrollToSection('security')} className="hover:text-slate-300">Security Specs</button>
             </div>
           </div>
         </div>

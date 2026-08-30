@@ -18,12 +18,39 @@ const PORT = process.env.PORT || 5001;
 app.use(cors());
 app.use(express.json());
 
-// MongoDB connection (Serverless re-use support)
-if (mongoose.connection.readyState === 0 && process.env.MONGO_URI) {
-  mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('MongoDB connected successfully'))
-    .catch(err => console.error('MongoDB connection error:', err));
-}
+// Serverless Database Connection Handler
+const connectDB = async () => {
+  if (mongoose.connection.readyState >= 1) return;
+
+  const mongoUri = process.env.MONGO_URI;
+  if (!mongoUri) {
+    console.error('CRITICAL: MONGO_URI environment variable is not defined!');
+    throw new Error('Database connection error: MONGO_URI environment variable is missing.');
+  }
+
+  try {
+    await mongoose.connect(mongoUri, {
+      bufferCommands: false, // Fail fast if disconnected instead of timing out after 10s
+      serverSelectionTimeoutMS: 5000,
+    });
+    console.log('MongoDB connected successfully');
+  } catch (err) {
+    console.error('MongoDB connection error:', err.message);
+    throw new Error(`Database connection failed: ${err.message}`);
+  }
+};
+
+// Ensure Database is connected before serving requests
+app.use(async (req, res, next) => {
+  if (req.path.startsWith('/api')) {
+    try {
+      await connectDB();
+    } catch (dbErr) {
+      return res.status(500).json({ message: dbErr.message });
+    }
+  }
+  next();
+});
 
 // Routes
 app.use('/api/auth', authRoutes);

@@ -630,30 +630,32 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* ARCHITECTURE SECTION */}
+      {/* EXAM WORKFLOW SECTION */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
-            <span className="text-xs font-bold uppercase tracking-widest text-blue-600">SYSTEM FLOW</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-blue-600">END-TO-END WORKFLOW</span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-              Application Architecture
+              Complete Examination Lifecycle
             </h2>
             <p className="text-slate-600 text-base">
-              End-to-end data flow designed for low latency, secure authentication, and cloud scalability.
+              From automated AI question generation to real-time proctoring and verified certification, TrustExam streamlines every stage of online assessment.
             </p>
           </div>
 
-          <div className="max-w-5xl mx-auto">
+          <div className="max-w-5xl mx-auto space-y-8">
+            
+            {/* Top Row: Steps 1 to 3 */}
             <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4 items-center">
               
               {/* Step 1 */}
-              <div className="p-5 bg-blue-50/80 rounded-2xl border border-blue-200 text-center space-y-2 relative">
+              <div className="p-5 bg-blue-50/80 rounded-2xl border border-blue-200 text-center space-y-2 relative shadow-soft-sm hover:shadow-soft-md transition-all">
                 <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center mx-auto">
                   1
                 </div>
-                <h4 className="font-bold text-slate-900 text-sm">Frontend</h4>
-                <p className="text-xs text-blue-700 font-medium">React + Vite + Tailwind</p>
+                <h4 className="font-bold text-slate-900 text-sm">Exam Authoring</h4>
+                <p className="text-xs text-blue-700 font-medium">AI Generation & CSV Bulk Upload</p>
               </div>
 
               {/* Arrow */}
@@ -662,12 +664,12 @@ const LandingPage = () => {
               </div>
 
               {/* Step 2 */}
-              <div className="p-5 bg-sky-50/80 rounded-2xl border border-sky-200 text-center space-y-2">
+              <div className="p-5 bg-sky-50/80 rounded-2xl border border-sky-200 text-center space-y-2 shadow-soft-sm hover:shadow-soft-md transition-all">
                 <div className="w-8 h-8 rounded-full bg-sky-600 text-white font-bold text-xs flex items-center justify-center mx-auto">
                   2
                 </div>
-                <h4 className="font-bold text-slate-900 text-sm">REST API</h4>
-                <p className="text-xs text-sky-700 font-medium">JSON Payloads & JWT</p>
+                <h4 className="font-bold text-slate-900 text-sm">Student Onboarding</h4>
+                <p className="text-xs text-sky-700 font-medium">Email Invites & Domain Whitelisting</p>
               </div>
 
               {/* Arrow */}
@@ -676,39 +678,42 @@ const LandingPage = () => {
               </div>
 
               {/* Step 3 */}
-              <div className="p-5 bg-indigo-50/80 rounded-2xl border border-indigo-200 text-center space-y-2">
+              <div className="p-5 bg-indigo-50/80 rounded-2xl border border-indigo-200 text-center space-y-2 shadow-soft-sm hover:shadow-soft-md transition-all">
                 <div className="w-8 h-8 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center mx-auto">
                   3
                 </div>
-                <h4 className="font-bold text-slate-900 text-sm">Node + Express</h4>
-                <p className="text-xs text-indigo-700 font-medium">Controller & Middleware</p>
+                <h4 className="font-bold text-slate-900 text-sm">Live Proctoring</h4>
+                <p className="text-xs text-indigo-700 font-medium">Tab Monitoring & Anti-Cheat Shield</p>
               </div>
 
             </div>
 
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 items-center pt-8 max-w-3xl mx-auto">
+            {/* Bottom Row: Steps 4 and 5 */}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 items-center max-w-3xl mx-auto">
+              
               {/* Step 4 */}
-              <div className="p-5 bg-emerald-50/80 rounded-2xl border border-emerald-200 text-center space-y-2">
+              <div className="p-5 bg-emerald-50/80 rounded-2xl border border-emerald-200 text-center space-y-2 shadow-soft-sm hover:shadow-soft-md transition-all">
                 <div className="w-8 h-8 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center mx-auto">
                   4
                 </div>
-                <h4 className="font-bold text-slate-900 text-sm">MongoDB Atlas</h4>
-                <p className="text-xs text-emerald-700 font-medium">Cloud Database Store</p>
+                <h4 className="font-bold text-slate-900 text-sm">Automated Grading</h4>
+                <p className="text-xs text-emerald-700 font-medium">Negative Marking & Class Ranks</p>
               </div>
 
               {/* Arrow */}
               <div className="hidden lg:flex items-center justify-center text-emerald-400">
-                <ChevronRight className="w-6 h-6 rotate-90 sm:rotate-0" />
+                <ChevronRight className="w-6 h-6" />
               </div>
 
               {/* Step 5 */}
-              <div className="p-5 bg-slate-100 rounded-2xl border border-slate-300 text-center space-y-2">
-                <div className="w-8 h-8 rounded-full bg-slate-800 text-white font-bold text-xs flex items-center justify-center mx-auto">
+              <div className="p-5 bg-purple-50/80 rounded-2xl border border-purple-200 text-center space-y-2 shadow-soft-sm hover:shadow-soft-md transition-all">
+                <div className="w-8 h-8 rounded-full bg-purple-600 text-white font-bold text-xs flex items-center justify-center mx-auto">
                   5
                 </div>
-                <h4 className="font-bold text-slate-900 text-sm">Docker Container</h4>
-                <p className="text-xs text-slate-600 font-medium">Vercel & Render Cloud</p>
+                <h4 className="font-bold text-slate-900 text-sm">Certificates & Badges</h4>
+                <p className="text-xs text-purple-700 font-medium">PDF Reports & Integrity Index</p>
               </div>
+
             </div>
 
           </div>

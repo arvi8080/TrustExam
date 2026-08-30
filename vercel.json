@@ -19,11 +19,27 @@
       "dest": "/api/index.js"
     },
     {
+      "src": "/assets/(.*)",
+      "dest": "/frontend/assets/$1"
+    },
+    {
+      "src": "/favicon.ico",
+      "dest": "/frontend/favicon.ico"
+    },
+    {
+      "src": "/exam.jpg",
+      "dest": "/frontend/exam.jpg"
+    },
+    {
+      "src": "/vite.svg",
+      "dest": "/frontend/vite.svg"
+    },
+    {
       "handle": "filesystem"
     },
     {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "/frontend/index.html"
     }
   ]
 }

@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../config';
 
-// Enhanced Results Modal Component
+// Enhanced Results & Analysis Modal Component
 const ResultsModal = ({ result, onClose }) => {
   const [rank, setRank] = useState(null);
+  const [activeFilter, setActiveFilter] = useState('all');
 
   useEffect(() => {
     if (result) {
@@ -33,12 +34,9 @@ const ResultsModal = ({ result, onClose }) => {
   const downloadPDF = async () => {
     try {
       if (!result?._id) {
-        console.error('Invalid result ID:', result?._id);
-        alert('Invalid result. Please refresh and try again.');
+        alert('Invalid result ID. Please refresh and try again.');
         return;
       }
-
-      console.log('Downloading PDF for result ID:', result._id);
       const token = localStorage.getItem('token');
       const response = await fetch(`${API_BASE_URL}/api/student/results/${result._id}/pdf`, {
         headers: {
@@ -50,131 +48,224 @@ const ResultsModal = ({ result, onClose }) => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `exam-result-${result.exam?.title?.replace(/\s+/g, '-').toLowerCase() || 'exam'}.html`;
+        a.download = `exam-result-${result.exam?.title?.replace(/\s+/g, '-').toLowerCase() || 'result'}.html`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
       } else {
-        alert('Failed to download PDF');
+        alert('Failed to download PDF report');
       }
     } catch (error) {
       console.error('Error downloading PDF:', error);
-      alert('Failed to download PDF');
+      alert('Failed to download PDF report');
     }
   };
 
   if (!result) return null;
 
-  const correctAnswers = result.answers ? result.answers.filter(a => a.isCorrect).length : 0;
+  const correctAnswersCount = result.answers ? result.answers.filter(a => a.isCorrect).length : 0;
   const totalQuestions = result.answers ? result.answers.length : 0;
+  const incorrectAnswersCount = totalQuestions - correctAnswersCount;
+
+  const filteredAnswers = (result.answers || []).filter(answer => {
+    if (activeFilter === 'correct') return answer.isCorrect;
+    if (activeFilter === 'incorrect') return !answer.isCorrect;
+    return true;
+  });
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
-        <div className="mt-3">
-          {/* Header */}
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-2xl font-bold text-gray-900">📊 Exam Results</h3>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
-            </button>
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+      <div className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden transform transition-all animate-in fade-in zoom-in-95 duration-200">
+        
+        {/* Modal Header */}
+        <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 sm:p-8 text-white relative">
+          <button
+            onClick={onClose}
+            className="absolute top-6 right-6 p-2 text-slate-400 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-all"
+            aria-label="Close modal"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          <div className="flex items-center space-x-3 mb-2">
+            <span className="px-3 py-1 bg-indigo-500/20 text-indigo-300 text-xs font-semibold uppercase tracking-wider rounded-full border border-indigo-500/30">
+              Exam Performance Audit
+            </span>
           </div>
 
-          {/* Exam Info */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 mb-6 border border-blue-200">
-            <h4 className="text-xl font-semibold text-gray-900 mb-4">{result.exam?.title || 'Exam'}</h4>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="text-center">
-                <p className="text-sm text-gray-600">Total Score</p>
-                <p className="text-3xl font-bold text-blue-600">{result.percentage}%</p>
-              </div>
-              <div className="text-center">
-                <p className="text-sm text-gray-600">Correct Answers</p>
-                <p className="text-3xl font-bold text-green-600">{correctAnswers}/{totalQuestions}</p>
-              </div>
-              <div className="text-center">
-                <p className="text-sm text-gray-600">Status</p>
-                <p className={`text-xl font-bold ${result.status === 'pass' ? 'text-green-600' : 'text-red-600'}`}>
-                  {result.status === 'pass' ? '✅ Passed' : '❌ Failed'}
+          <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+            {result.exam?.title || 'Examination Result'}
+          </h3>
+          <p className="text-slate-400 text-sm mt-1">
+            Completed on {new Date(result.submittedAt).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })}
+          </p>
+        </div>
+
+        {/* Modal Content */}
+        <div className="p-6 sm:p-8 max-h-[75vh] overflow-y-auto space-y-8">
+          
+          {/* Key Metrics Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="p-5 bg-gradient-to-br from-indigo-50 to-blue-50/50 rounded-2xl border border-indigo-100 text-center">
+              <p className="text-xs font-semibold uppercase tracking-wider text-indigo-600 mb-1">Final Score</p>
+              <p className="text-3xl sm:text-4xl font-extrabold text-indigo-950">{result.percentage}%</p>
+            </div>
+
+            <div className="p-5 bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-2xl border border-emerald-100 text-center">
+              <p className="text-xs font-semibold uppercase tracking-wider text-emerald-600 mb-1">Accuracy</p>
+              <p className="text-3xl sm:text-4xl font-extrabold text-emerald-950">{correctAnswersCount}/{totalQuestions}</p>
+            </div>
+
+            <div className="p-5 bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl border border-slate-200 text-center">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Outcome</p>
+              <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${
+                result.status === 'pass' 
+                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' 
+                  : 'bg-rose-100 text-rose-800 border border-rose-300'
+              }`}>
+                {result.status === 'pass' ? '✓ Passed' : '✕ Needs Review'}
+              </span>
+            </div>
+
+            <div className="p-5 bg-gradient-to-br from-purple-50 to-pink-50/50 rounded-2xl border border-purple-100 text-center">
+              <p className="text-xs font-semibold uppercase tracking-wider text-purple-600 mb-1">Class Rank</p>
+              <p className="text-3xl sm:text-4xl font-extrabold text-purple-950">{rank ? `#${rank}` : 'N/A'}</p>
+            </div>
+          </div>
+
+          {/* Auto-Submit Notice if applicable */}
+          {result.autoSubmitted && (
+            <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start space-x-3 text-amber-900 text-sm">
+              <span className="text-lg">⚠️</span>
+              <div>
+                <p className="font-semibold">Auto-submitted by System Guard</p>
+                <p className="text-amber-700 text-xs mt-0.5">
+                  Reason: {result.autoSubmitReason ? result.autoSubmitReason.replace(/_/g, ' ') : 'Session ended'}
                 </p>
               </div>
-              {rank && (
-                <div className="text-center">
-                  <p className="text-sm text-gray-600">Your Rank</p>
-                  <p className="text-2xl font-bold text-purple-600">#{rank}</p>
+            </div>
+          )}
+
+          {/* Detailed Question Review */}
+          <div>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
+              <div>
+                <h4 className="text-lg font-bold text-slate-900">Question Performance Breakdown</h4>
+                <p className="text-xs text-slate-500">Review option selections and correct answers</p>
+              </div>
+
+              {/* Filter Pills */}
+              <div className="flex items-center space-x-2 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+                <button
+                  onClick={() => setActiveFilter('all')}
+                  className={`px-3 py-1.5 rounded-lg transition-all ${activeFilter === 'all' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                >
+                  All ({totalQuestions})
+                </button>
+                <button
+                  onClick={() => setActiveFilter('correct')}
+                  className={`px-3 py-1.5 rounded-lg transition-all ${activeFilter === 'correct' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600 hover:text-emerald-700'}`}
+                >
+                  Correct ({correctAnswersCount})
+                </button>
+                <button
+                  onClick={() => setActiveFilter('incorrect')}
+                  className={`px-3 py-1.5 rounded-lg transition-all ${activeFilter === 'incorrect' ? 'bg-rose-600 text-white shadow-sm' : 'text-slate-600 hover:text-rose-700'}`}
+                >
+                  Incorrect ({incorrectAnswersCount})
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {filteredAnswers.length > 0 ? (
+                filteredAnswers.map((answer, index) => (
+                  <div
+                    key={index}
+                    className={`p-5 rounded-2xl border transition-all ${
+                      answer.isCorrect 
+                        ? 'bg-emerald-50/40 border-emerald-200/80 hover:border-emerald-300' 
+                        : 'bg-rose-50/40 border-rose-200/80 hover:border-rose-300'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-4 mb-3">
+                      <div className="flex items-center space-x-2">
+                        <span className="px-2.5 py-0.5 bg-slate-900 text-white text-xs font-bold rounded-md">
+                          Q{index + 1}
+                        </span>
+                        <h5 className="font-semibold text-slate-900 text-sm">
+                          {answer.question?.questionText || `Question ${index + 1}`}
+                        </h5>
+                      </div>
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold shrink-0 ${
+                        answer.isCorrect 
+                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' 
+                          : 'bg-rose-100 text-rose-800 border border-rose-300'
+                      }`}>
+                        {answer.isCorrect ? '✓ Correct' : '✕ Incorrect'}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-2 border-t border-slate-200/60">
+                      <div className="p-3 rounded-xl bg-white/80 border border-slate-200/60">
+                        <span className="text-slate-500 block font-medium mb-1">Your Selection:</span>
+                        <span className={`font-bold ${answer.isCorrect ? 'text-emerald-700' : 'text-rose-700'}`}>
+                          {answer.selectedAnswer !== undefined 
+                            ? (answer.question?.options?.[answer.selectedAnswer] || `Option ${answer.selectedAnswer + 1}`) 
+                            : 'Not answered'}
+                        </span>
+                      </div>
+                      <div className="p-3 rounded-xl bg-white/80 border border-slate-200/60">
+                        <span className="text-slate-500 block font-medium mb-1">Correct Solution:</span>
+                        <span className="font-bold text-emerald-700">
+                          {answer.correctAnswer !== undefined 
+                            ? (answer.question?.options?.[answer.correctAnswer] || `Option ${answer.correctAnswer + 1}`) 
+                            : 'Option 1'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                  <p className="text-slate-500 text-sm font-medium">No questions match the selected filter.</p>
                 </div>
               )}
             </div>
-            <div className="mt-4 text-center">
-              <p className="text-sm text-gray-600">Completed On</p>
-              <p className="text-lg text-gray-900">{new Date(result.submittedAt).toLocaleString()}</p>
-            </div>
-            {result.autoSubmitted && (
-              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
-                <p className="text-sm text-yellow-800">
-                  <strong>⚠️ Auto-submitted:</strong> {result.autoSubmitReason.replace('_', ' ')}
-                </p>
-              </div>
-            )}
           </div>
 
-          {/* Detailed Answers */}
-          <div className="mb-6">
-            <h4 className="text-lg font-semibold text-gray-900 mb-4">📝 Detailed Answers</h4>
-            <div className="space-y-4 max-h-96 overflow-y-auto">
-              {(result.answers || []).map((answer, index) => (
-                <div key={index} className={`p-4 rounded-lg border ${answer.isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <p className="font-medium text-gray-900 mb-2">Question {index + 1}</p>
-                      <p className="text-gray-700 mb-2">{answer.question?.questionText}</p>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-sm text-gray-600">Your Answer:</p>
-                          <p className={`font-medium ${answer.isCorrect ? 'text-green-600' : 'text-red-600'}`}>
-                            {answer.selectedAnswer !== undefined ? `Option ${answer.selectedAnswer + 1}` : 'Not answered'}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Correct Answer:</p>
-                          <p className="font-medium text-green-600">Option {answer.correctAnswer + 1}</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className={`px-3 py-1 rounded-full text-sm font-medium ${answer.isCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                      {answer.isCorrect ? '✅ Correct' : '❌ Incorrect'}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+        </div>
+
+        {/* Modal Actions Footer */}
+        <div className="p-6 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center text-xs text-slate-500 space-x-1">
+            <span>Verified System Report</span>
+            <span>•</span>
+            <span className="font-mono">{result._id}</span>
           </div>
 
-          {/* Actions */}
-          <div className="flex justify-end space-x-4">
+          <div className="flex items-center space-x-3 w-full sm:w-auto">
             <button
               onClick={downloadPDF}
-              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition duration-200 flex items-center space-x-2"
+              className="flex-1 sm:flex-initial inline-flex items-center justify-center space-x-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl transition-all shadow-md shadow-indigo-600/20 hover:shadow-lg"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              <span>Download PDF</span>
+              <span>Download Official Report</span>
             </button>
             <button
               onClick={onClose}
-              className="bg-gray-600 text-white px-6 py-2 rounded-md hover:bg-gray-700 transition duration-200"
+              className="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold text-sm rounded-xl transition-all"
             >
               Close
             </button>
           </div>
         </div>
+
       </div>
     </div>
   );
@@ -183,7 +274,7 @@ const ResultsModal = ({ result, onClose }) => {
 const StudentDashboard = () => {
   const [exams, setExams] = useState([]);
   const [upcomingExams, setUpcomingExams] = useState([]);
-  const [countdowns, setCountdowns] = useState({}); // Store countdown for each exam
+  const [countdowns, setCountdowns] = useState({});
   const [results, setResults] = useState([]);
   const [achievements, setAchievements] = useState([]);
   const [profile, setProfile] = useState(null);
@@ -194,6 +285,9 @@ const StudentDashboard = () => {
   const [selectedResult, setSelectedResult] = useState(null);
   const [showResultsModal, setShowResultsModal] = useState(false);
   const [fetchError, setFetchError] = useState(null);
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'exams' | 'results' | 'achievements' | 'profile'
+  const [searchQuery, setSearchQuery] = useState('');
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -203,30 +297,37 @@ const StudentDashboard = () => {
     fetchProfile();
   }, []);
 
-  // Countdown timer effect for upcoming exams
+  // Update countdown timers for upcoming exams
   useEffect(() => {
-    const interval = setInterval(() => {
-      const now = new Date();
+    const updateCountdowns = () => {
       const newCountdowns = {};
-      
       upcomingExams.forEach(exam => {
-        const startTime = new Date(exam.startTime);
-        const diff = startTime - now;
-        
-        if (diff > 0) {
-          const hours = Math.floor(diff / (1000 * 60 * 60));
-          const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-          const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-          
-          newCountdowns[exam._id] = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        const now = new Date().getTime();
+        const startTime = new Date(exam.startTime).getTime();
+        const difference = startTime - now;
+
+        if (difference > 0) {
+          const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+          if (days > 0) {
+            newCountdowns[exam._id] = `${days}d ${hours}h ${minutes}m`;
+          } else if (hours > 0) {
+            newCountdowns[exam._id] = `${hours}h ${minutes}m ${seconds}s`;
+          } else {
+            newCountdowns[exam._id] = `${minutes}m ${seconds}s`;
+          }
         } else {
-          newCountdowns[exam._id] = 'Starting Soon';
+          newCountdowns[exam._id] = 'Available Now';
         }
       });
-      
       setCountdowns(newCountdowns);
-    }, 1000);
-    
+    };
+
+    updateCountdowns();
+    const interval = setInterval(updateCountdowns, 1000);
     return () => clearInterval(interval);
   }, [upcomingExams]);
 
@@ -234,7 +335,6 @@ const StudentDashboard = () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        console.log("No token found!");
         setLoading(false);
         return;
       }
@@ -256,7 +356,6 @@ const StudentDashboard = () => {
           errorData = await response.text();
         }
         const errorMsg = errorData.error || errorData || `HTTP ${response.status}`;
-        console.error(`Failed to fetch exams: ${response.status} - ${errorMsg}`);
         setFetchError(errorMsg);
         setExams([]);
         setUpcomingExams([]);
@@ -284,7 +383,6 @@ const StudentDashboard = () => {
         const data = await response.json();
         setResults(Array.isArray(data) ? data : []);
       } else {
-        console.error('Failed to fetch results:', response.status);
         setResults([]);
       }
     } catch (error) {
@@ -306,7 +404,6 @@ const StudentDashboard = () => {
         const data = await response.json();
         setAchievements(Array.isArray(data) ? data : []);
       } else {
-        console.error('Failed to fetch achievements:', response.status);
         setAchievements([]);
       }
     } catch (error) {
@@ -327,8 +424,13 @@ const StudentDashboard = () => {
       if (response.ok) {
         const data = await response.json();
         setProfile(data);
-      } else {
-        console.error('Failed to fetch profile:', response.status);
+        setProfileForm({
+          username: data.username || '',
+          email: data.email || '',
+          studentId: data.studentId || '',
+          department: data.department || '',
+          year: data.year || ''
+        });
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -396,589 +498,592 @@ const StudentDashboard = () => {
     return now >= startTime && now <= endTime;
   };
 
+  const averageScore = results.length > 0
+    ? Math.round(results.reduce((sum, r) => sum + (r.percentage || 0), 0) / results.length)
+    : 0;
+
+  const filteredActiveExams = exams.filter(exam =>
+    exam.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    exam.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-200">
+        <div className="relative w-16 h-16 mb-4">
+          <div className="absolute inset-0 rounded-full border-4 border-indigo-500/20 animate-ping"></div>
+          <div className="w-16 h-16 rounded-full border-4 border-t-indigo-500 border-r-indigo-500 border-b-transparent border-l-transparent animate-spin"></div>
         </div>
+        <p className="text-slate-400 font-medium text-sm tracking-wide">Loading Secure Student Workspace...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      {/* Enhanced Header */}
-      <header className="bg-white shadow-lg border-b border-gray-200 backdrop-blur-sm bg-white/95">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
+      
+      {/* Sticky Top Navigation Bar */}
+      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">T</span>
+            
+            {/* Logo */}
+            <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setActiveTab('overview')}>
+              <div className="w-10 h-10 bg-gradient-to-tr from-indigo-600 via-indigo-700 to-purple-600 rounded-xl flex items-center justify-center shadow-md shadow-indigo-600/20">
+                <span className="text-white font-extrabold text-lg tracking-wider">T</span>
               </div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                TrustExam
-              </h1>
+              <div>
+                <span className="text-xl font-black bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent tracking-tight">
+                  TrustExam
+                </span>
+                <span className="hidden sm:inline-block ml-2 px-2 py-0.5 bg-indigo-50 text-indigo-700 text-[10px] font-bold uppercase tracking-wider rounded-md border border-indigo-100">
+                  Student Portal
+                </span>
+              </div>
             </div>
-            <nav className="flex items-center space-x-3">
-              <button
-                onClick={() => setShowResultsModal(true)}
-                className="bg-gradient-to-r from-gray-600 to-gray-700 text-white px-4 py-2 rounded-lg hover:from-gray-700 hover:to-gray-800 transition-all duration-200 flex items-center space-x-2 shadow-md"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                </svg>
-                <span>View Results</span>
-              </button>
+
+            {/* Navigation Tabs */}
+            <nav className="hidden md:flex items-center space-x-1">
+              {[
+                { id: 'overview', label: 'Dashboard', icon: '🏠' },
+                { id: 'exams', label: `Exams (${exams.length})`, icon: '📚' },
+                { id: 'results', label: `Results (${results.length})`, icon: '📊' },
+                { id: 'achievements', label: `Badges (${achievements.length})`, icon: '🏆' },
+                { id: 'profile', label: 'Profile', icon: '👤' },
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-150 flex items-center space-x-2 ${
+                    activeTab === tab.id
+                      ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  }`}
+                >
+                  <span>{tab.icon}</span>
+                  <span>{tab.label}</span>
+                </button>
+              ))}
+            </nav>
+
+            {/* Right User Bar */}
+            <div className="flex items-center space-x-3">
+              {profile && (
+                <div 
+                  onClick={() => setActiveTab('profile')}
+                  className="hidden sm:flex items-center space-x-2.5 p-1.5 pl-3 pr-3 bg-slate-100 hover:bg-slate-200/80 rounded-xl transition-all cursor-pointer border border-slate-200/60"
+                >
+                  <div className="w-7 h-7 bg-indigo-600 text-white rounded-lg flex items-center justify-center font-bold text-xs">
+                    {profile.username ? profile.username.charAt(0).toUpperCase() : 'S'}
+                  </div>
+                  <div className="text-left">
+                    <p className="text-xs font-bold text-slate-800 leading-tight">{profile.username || 'Student'}</p>
+                    <p className="text-[10px] font-semibold text-emerald-600 leading-tight">
+                      Trust Index: {profile.trustScore || 100}/100
+                    </p>
+                  </div>
+                </div>
+              )}
+
               <button
                 onClick={handleLogout}
-                className="bg-gradient-to-r from-red-600 to-red-700 text-white px-4 py-2 rounded-lg hover:from-red-700 hover:to-red-800 transition-all duration-200 flex items-center space-x-2 shadow-md"
+                className="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-xl transition-all border border-rose-200/60 flex items-center space-x-1.5"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
-                <span>Logout</span>
+                <span className="hidden sm:inline">Logout</span>
               </button>
-            </nav>
+            </div>
+
           </div>
+        </div>
+
+        {/* Mobile Subnav */}
+        <div className="flex md:hidden overflow-x-auto px-4 py-2 bg-slate-50 border-t border-slate-200/60 space-x-2">
+          {[
+            { id: 'overview', label: 'Dashboard' },
+            { id: 'exams', label: 'Exams' },
+            { id: 'results', label: 'Results' },
+            { id: 'achievements', label: 'Badges' },
+            { id: 'profile', label: 'Profile' },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap ${
+                activeTab === tab.id ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 border border-slate-200'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto py-8 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          {/* Welcome Section */}
-          <div className="mb-12">
-            <div className="text-center">
-              <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-4">
-                Welcome back, {profile?.username || 'Student'}! 🎓
-              </h1>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Ready to ace your next exam? Choose from available exams below and showcase your knowledge!
-              </p>
+      {/* Main Workspace Body */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+        
+        {/* Welcome Hero Banner */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 sm:p-10 mb-8 shadow-xl">
+          <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+          
+          <div className="relative z-10 max-w-3xl space-y-3">
+            <div className="inline-flex items-center space-x-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-xs font-semibold text-indigo-300 border border-white/10">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>Proctored Student Dashboard</span>
             </div>
+
+            <h1 className="text-3xl sm:text-4xl font-black tracking-tight">
+              Welcome back, {profile?.username || 'Student'}! 🎓
+            </h1>
+            
+            <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+              Track your scheduled proctored assessments, review exam score analytics, and maintain your integrity index.
+            </p>
           </div>
+        </div>
 
-          {/* Quick Stats Dashboard */}
-          {profile && (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-              <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-blue-100 text-sm font-medium">Trust Score</p>
-                    <p className="text-3xl font-bold">{profile.trustScore}/100</p>
-                  </div>
-                  <div className="w-12 h-12 bg-blue-400 rounded-full flex items-center justify-center">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                  </div>
-                </div>
-                <div className="mt-4">
-                  <div className="w-full bg-blue-400 rounded-full h-2">
-                    <div className="bg-white h-2 rounded-full" style={{ width: `${profile.trustScore}%` }}></div>
-                  </div>
+        {/* 4 Stat Overview Cards */}
+        {profile && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-8">
+            
+            {/* Trust Score */}
+            <div className="p-5 sm:p-6 bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Trust Score</span>
+                <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-sm">
+                  🛡️
                 </div>
               </div>
-
-              <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-green-100 text-sm font-medium">Exams Completed</p>
-                    <p className="text-3xl font-bold">{results.length}</p>
-                  </div>
-                  <div className="w-12 h-12 bg-green-400 rounded-full flex items-center justify-center">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-lg">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-purple-100 text-sm font-medium">Average Score</p>
-                    <p className="text-3xl font-bold">
-                      {results.length > 0
-                        ? `${Math.round(results.reduce((sum, r) => sum + r.percentage, 0) / results.length)}%`
-                        : '0%'
-                      }
-                    </p>
-                  </div>
-                  <div className="w-12 h-12 bg-purple-400 rounded-full flex items-center justify-center">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl p-6 text-white shadow-lg">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-yellow-100 text-sm font-medium">Achievements</p>
-                    <p className="text-3xl font-bold">{achievements.length}</p>
-                  </div>
-                  <div className="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
-                    </svg>
-                  </div>
-                </div>
+              <p className="text-2xl sm:text-3xl font-extrabold text-slate-900">{profile.trustScore || 100}<span className="text-xs text-slate-400 font-normal">/100</span></p>
+              <div className="mt-3 w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                <div 
+                  className={`h-2 rounded-full transition-all duration-500 ${
+                    (profile.trustScore || 100) >= 80 ? 'bg-emerald-500' :
+                    (profile.trustScore || 100) >= 60 ? 'bg-amber-500' : 'bg-rose-500'
+                  }`}
+                  style={{ width: `${profile.trustScore || 100}%` }}
+                ></div>
               </div>
             </div>
-          )}
 
-          {/* Profile Section */}
-          {profile && (
-            <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100 mb-12">
-              <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center">
-                  <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mr-4">
-                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                    </svg>
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900">My Profile</h2>
-                    <p className="text-gray-600">Manage your account information</p>
-                  </div>
+            {/* Exams Completed */}
+            <div className="p-5 sm:p-6 bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Completed</span>
+                <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm">
+                  📝
+                </div>
+              </div>
+              <p className="text-2xl sm:text-3xl font-extrabold text-slate-900">{results.length}</p>
+              <p className="text-xs text-slate-500 mt-2 font-medium">Recorded Submissions</p>
+            </div>
+
+            {/* Average Score */}
+            <div className="p-5 sm:p-6 bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Average Score</span>
+                <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-sm">
+                  📈
+                </div>
+              </div>
+              <p className="text-2xl sm:text-3xl font-extrabold text-slate-900">{averageScore}%</p>
+              <p className="text-xs text-slate-500 mt-2 font-medium">Overall Performance</p>
+            </div>
+
+            {/* Badges Earned */}
+            <div className="p-5 sm:p-6 bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Badges</span>
+                <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-sm">
+                  🏆
+                </div>
+              </div>
+              <p className="text-2xl sm:text-3xl font-extrabold text-slate-900">{achievements.length}</p>
+              <p className="text-xs text-slate-500 mt-2 font-medium">Milestone Rewards</p>
+            </div>
+
+          </div>
+        )}
+
+        {/* TAB 1: OVERVIEW */}
+        {activeTab === 'overview' && (
+          <div className="space-y-10">
+            
+            {/* Live Active Exams Section */}
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-xl font-extrabold text-slate-900 tracking-tight flex items-center space-x-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+                    <span>Live & Active Exams</span>
+                  </h2>
+                  <p className="text-xs text-slate-500">Exams currently open for completion</p>
                 </div>
                 <button
-                  onClick={() => {
-                    if (editingProfile) {
-                      setEditingProfile(false);
-                    } else {
-                      setProfileForm({ 
-                        username: profile.username, 
-                        email: profile.email,
-                        studentId: profile.studentId || '',
-                        department: profile.department || '',
-                        year: profile.year || ''
-                      });
-                      setEditingProfile(true);
-                    }
-                  }}
-                  className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 font-semibold shadow-md hover:shadow-lg"
+                  onClick={() => setActiveTab('exams')}
+                  className="text-xs font-bold text-indigo-600 hover:text-indigo-800"
                 >
-                  {editingProfile ? 'Cancel' : 'Edit Profile'}
+                  View All ({exams.length}) →
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">👤 Username</label>
-                    {editingProfile ? (
-                      <input
-                        type="text"
-                        value={profileForm.username}
-                        onChange={(e) => setProfileForm({ ...profileForm, username: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                      />
-                    ) : (
-                      <p className="text-lg text-gray-900 font-medium">{profile.username}</p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">📧 Email</label>
-                    {editingProfile ? (
-                      <input
-                        type="email"
-                        value={profileForm.email}
-                        onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                      />
-                    ) : (
-                      <p className="text-lg text-gray-900 font-medium">{profile.email}</p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">🛡️ Trust Score</label>
-                    <div className="flex items-center space-x-4">
-                      <div className={`text-3xl font-bold ${
-                        profile.trustScore >= 80 ? 'text-green-600' :
-                        profile.trustScore >= 60 ? 'text-yellow-600' : 'text-red-600'
-                      }`}>
-                        {profile.trustScore}/100
-                      </div>
-                      <div className="flex-1">
-                        <div className="w-full bg-gray-200 rounded-full h-3">
-                          <div
-                            className={`h-3 rounded-full transition-all duration-500 ${
-                              profile.trustScore >= 80 ? 'bg-green-500' :
-                              profile.trustScore >= 60 ? 'bg-yellow-500' : 'bg-red-500'
-                            }`}
-                            style={{ width: `${profile.trustScore}%` }}
-                          ></div>
+              {exams.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {exams.slice(0, 3).map(exam => (
+                    <div key={exam._id} className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold rounded-md">
+                            ● Live Now
+                          </span>
+                          <span className="text-xs font-semibold text-slate-500">{exam.duration} mins</span>
                         </div>
+                        <h3 className="font-bold text-slate-900 text-lg mb-1">{exam.title}</h3>
+                        <p className="text-slate-600 text-xs line-clamp-2 mb-4">{exam.description || 'Proctored assessment session.'}</p>
+                      </div>
+
+                      <div className="space-y-3 pt-3 border-t border-slate-100">
+                        <div className="flex justify-between text-xs text-slate-500">
+                          <span>Questions: {exam.questions?.length || 0}</span>
+                          <span>Ends: {formatDate(exam.endTime)}</span>
+                        </div>
+                        <button
+                          onClick={() => handleTakeExam(exam._id)}
+                          disabled={!isExamAvailable(exam)}
+                          className={`w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/20 transition-all ${
+                            !isExamAvailable(exam) ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
+                        >
+                          Start Exam 🚀
+                        </button>
                       </div>
                     </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">📚 Exams Attempted</label>
-                    <p className="text-3xl font-bold text-blue-600">{results.length}</p>
-                  </div>
+                  ))}
                 </div>
-
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">📊 Average Score</label>
-                    <p className="text-3xl font-bold text-purple-600">
-                      {results.length > 0
-                        ? `${Math.round(results.reduce((sum, r) => sum + r.percentage, 0) / results.length)}%`
-                        : 'N/A'
-                      }
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">🏆 Achievements Earned</label>
-                    <p className="text-3xl font-bold text-yellow-600">{achievements.length}</p>
-                  </div>
-                </div>
-              </div>
-
-              {editingProfile && (
-                <div className="mt-8 flex justify-end space-x-4">
-                  <button
-                    onClick={() => setEditingProfile(false)}
-                    className="bg-gray-500 text-white px-6 py-3 rounded-xl hover:bg-gray-600 transition-all duration-200 font-semibold"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleUpdateProfile}
-                    disabled={updatingProfile}
-                    className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 font-semibold shadow-md hover:shadow-lg disabled:opacity-50"
-                  >
-                    {updatingProfile ? 'Updating...' : 'Save Changes'}
-                  </button>
+              ) : (
+                <div className="p-8 bg-white rounded-2xl border border-slate-200 text-center">
+                  <p className="text-slate-500 text-sm font-medium">No live exams open right now. Check upcoming schedules below.</p>
                 </div>
               )}
             </div>
-          )}
 
-          {/* Upcoming Exams */}
-          {upcomingExams.length > 0 && (
-            <div className="mb-12">
-              <div className="flex items-center mb-8">
-                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mr-4">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                  </svg>
+            {/* Upcoming Scheduled Exams */}
+            {upcomingExams.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">⏰ Scheduled Upcoming Exams</h2>
+                    <p className="text-xs text-slate-500">Assessments scheduled to launch soon</p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-3xl font-bold text-gray-900">Upcoming Exams</h2>
-                  <p className="text-gray-600 mt-1">Get ready for these scheduled assessments</p>
-                </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {upcomingExams.map(exam => (
-                  <div key={exam._id} className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                    <div className="bg-gradient-to-r from-purple-500 to-purple-600 p-6">
-                      <div className="flex items-center justify-between">
-                        <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                          </svg>
-                        </div>
-                        <span className="px-3 py-1 bg-white/20 text-white text-sm font-medium rounded-full">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {upcomingExams.map(exam => (
+                    <div key={exam._id} className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="px-2.5 py-1 bg-purple-50 text-purple-700 border border-purple-200 text-xs font-bold rounded-md">
                           Scheduled
                         </span>
+                        <span className="text-xs font-semibold text-slate-500">{exam.duration} mins</span>
                       </div>
-                      <h3 className="text-xl font-bold text-white mt-4 mb-2">{exam.title}</h3>
-                      <p className="text-purple-100 text-sm line-clamp-2">{exam.description}</p>
+                      <h3 className="font-bold text-slate-900 text-lg mb-1">{exam.title}</h3>
+                      <p className="text-slate-600 text-xs line-clamp-2 mb-4">{exam.description || 'Upcoming proctored assessment.'}</p>
+
+                      <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-center mb-4">
+                        <p className="text-[10px] font-bold uppercase text-slate-500">Launches In</p>
+                        <p className="text-lg font-mono font-bold text-indigo-700">{countdowns[exam._id] || 'Calculating...'}</p>
+                      </div>
+
+                      <p className="text-xs text-slate-500 text-center">Starts: {formatDate(exam.startTime)}</p>
                     </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
-                    <div className="p-6">
-                      <div className="space-y-3 mb-6">
-                        <div className="flex items-center text-gray-600">
-                          <svg className="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                          </svg>
-                          <span className="text-sm">Duration: {exam.duration} minutes</span>
-                        </div>
-                        <div className="flex items-center text-gray-600">
-                          <svg className="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                          </svg>
-                          <span className="text-sm">Questions: {exam.questions?.length || 0}</span>
-                        </div>
-                        <div className="flex items-center text-gray-600">
-                          <svg className="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                          </svg>
-                          <span className="text-sm">Starts: {new Date(exam.startTime).toLocaleString()}</span>
-                        </div>
-                      </div>
-
-                      {/* Countdown Timer */}
-                      <div className="bg-purple-50 rounded-xl p-4 mb-6 border border-purple-200">
-                        <div className="text-center">
-                          <p className="text-sm text-purple-600 font-medium mb-2">⏰ Time Until Start</p>
-                          <p className="text-2xl font-bold text-purple-700 font-mono">
-                            {countdowns[exam._id] || 'Calculating...'}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="text-center text-gray-500">
-                        <p className="text-sm">Exam will be available soon</p>
-                      </div>
-                    </div>
+            {/* Recent Results Snapshot */}
+            {results.length > 0 && (
+              <div className="bg-white rounded-2xl border border-slate-200 p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">📊 Recent Results</h2>
+                    <p className="text-xs text-slate-500">Latest completed proctored submissions</p>
                   </div>
-                ))}
+                  <button onClick={() => setActiveTab('results')} className="text-xs font-bold text-indigo-600 hover:text-indigo-800">
+                    View All ({results.length}) →
+                  </button>
+                </div>
+
+                <div className="divide-y divide-slate-100">
+                  {results.slice(0, 4).map(result => (
+                    <div key={result._id} className="py-3.5 flex items-center justify-between gap-4">
+                      <div>
+                        <h4 className="font-bold text-slate-900 text-sm">{result.exam?.title || 'Exam Result'}</h4>
+                        <p className="text-xs text-slate-500">Completed: {formatDate(result.submittedAt)}</p>
+                      </div>
+
+                      <div className="flex items-center space-x-4">
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                          result.status === 'pass' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                        }`}>
+                          {result.percentage}% ({result.status === 'pass' ? 'Pass' : 'Fail'})
+                        </span>
+                        <button
+                          onClick={() => handleViewResults(result)}
+                          className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition-all"
+                        >
+                          View Report
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+          </div>
+        )}
+
+        {/* TAB 2: AVAILABLE EXAMS */}
+        {activeTab === 'exams' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-black text-slate-900 tracking-tight">Available Examinations</h2>
+                <p className="text-xs text-slate-500">Select an assessment to launch the secure proctored environment</p>
+              </div>
+
+              <div className="w-full sm:w-72">
+                <input
+                  type="text"
+                  placeholder="Search exams by title..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                />
               </div>
             </div>
-          )}
 
-          {/* Available Exams */}
-          {exams.length > 0 && (
-            <div className="mb-12">
-              <div className="flex items-center mb-8">
-                <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center mr-4">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                  </svg>
-                </div>
-                <div>
-                  <h2 className="text-3xl font-bold text-gray-900">Available Exams</h2>
-                  <p className="text-gray-600 mt-1">Choose an exam to start your assessment</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {exams.map(exam => (
-                  <div key={exam._id} className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden group">
-                    <div className="bg-gradient-to-r from-green-500 to-green-600 p-6">
-                      <div className="flex items-center justify-between">
-                        <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                          </svg>
-                        </div>
-                        <span className="px-3 py-1 bg-white/20 text-white text-sm font-medium rounded-full">
-                          Active
+            {filteredActiveExams.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredActiveExams.map(exam => (
+                  <div key={exam._id} className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold rounded-md">
+                          ● Active Now
                         </span>
+                        <span className="text-xs font-semibold text-slate-500">{exam.duration} Minutes</span>
                       </div>
-                      <h3 className="text-xl font-bold text-white mt-4 mb-2">{exam.title}</h3>
-                      <p className="text-green-100 text-sm line-clamp-2">{exam.description}</p>
+
+                      <h3 className="font-bold text-slate-900 text-lg mb-2">{exam.title}</h3>
+                      <p className="text-slate-600 text-xs line-clamp-3 mb-4">{exam.description || 'Proctored assessment session.'}</p>
                     </div>
 
-                    <div className="p-6">
-                      <div className="space-y-3 mb-6">
-                        <div className="flex items-center text-gray-600">
-                          <svg className="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                          </svg>
-                          <span className="text-sm">Duration: {exam.duration} minutes</span>
-                        </div>
-                        <div className="flex items-center text-gray-600">
-                          <svg className="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                          </svg>
-                          <span className="text-sm">Questions: {exam.questions?.length || 0}</span>
-                        </div>
-                        <div className="flex items-center text-gray-600">
-                          <svg className="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                          </svg>
-                          <span className="text-sm">Ends: {new Date(exam.endTime).toLocaleString()}</span>
-                        </div>
+                    <div className="space-y-3 pt-3 border-t border-slate-100">
+                      <div className="grid grid-cols-2 gap-2 text-xs text-slate-500">
+                        <div>Questions: <span className="font-bold text-slate-800">{exam.questions?.length || 0}</span></div>
+                        <div>Passing: <span className="font-bold text-slate-800">{exam.passingScore || 50}%</span></div>
                       </div>
-
                       <button
                         onClick={() => handleTakeExam(exam._id)}
                         disabled={!isExamAvailable(exam)}
-                        className={`w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-6 rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 ${
+                        className={`w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/20 transition-all ${
                           !isExamAvailable(exam) ? 'opacity-50 cursor-not-allowed' : ''
                         }`}
                       >
-                        {isExamAvailable(exam) ? 'Start Exam 🚀' : 'Not Available'}
+                        Start Proctored Exam 🚀
                       </button>
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="p-12 bg-white rounded-2xl border border-slate-200 text-center">
+                <p className="text-slate-500 font-semibold text-sm">No available exams match your criteria.</p>
+              </div>
+            )}
+          </div>
+        )}
 
-          {/* Recent Results */}
-          {results.length > 0 && (
-            <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Results</h2>
-              <div className="space-y-4">
-                {results.slice(0, 5).map(result => (
-                  <div key={result._id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
-                    <div>
-                      <h3 className="font-medium text-gray-900">{result.exam?.title}</h3>
-                      <p className="text-sm text-gray-500">Completed on {formatDate(result.submittedAt)}</p>
-                    </div>
-                    <div className="text-right flex items-center space-x-4">
+        {/* TAB 3: RESULTS */}
+        {activeTab === 'results' && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight">Your Completed Results</h2>
+              <p className="text-xs text-slate-500">Full audit trail of your completed assessments</p>
+            </div>
+
+            {results.length > 0 ? (
+              <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+                <div className="divide-y divide-slate-100">
+                  {results.map(result => (
+                    <div key={result._id} className="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/80 transition-all">
                       <div>
-                        <div className={`text-lg font-semibold ${
-                          result.percentage >= 70 ? 'text-green-600' :
-                          result.percentage >= 50 ? 'text-yellow-600' : 'text-red-600'
+                        <span className={`inline-block px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider mb-1 ${
+                          result.status === 'pass' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
                         }`}>
-                          {result.percentage}%
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {result.status === 'pass' ? 'Pass' :
-                           result.status === 'fail' ? 'Fail' : 'Pending'}
-                        </div>
+                          {result.status === 'pass' ? 'PASSED' : 'FAILED'}
+                        </span>
+                        <h3 className="font-bold text-slate-900 text-base">{result.exam?.title || 'Examination Result'}</h3>
+                        <p className="text-xs text-slate-500 mt-0.5">Submitted: {formatDate(result.submittedAt)}</p>
                       </div>
-                      <button
-                        onClick={() => handleViewResults(result)}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-200 text-sm"
-                      >
-                        View Details
-                      </button>
+
+                      <div className="flex items-center space-x-6">
+                        <div className="text-right">
+                          <p className="text-2xl font-black text-slate-900">{result.percentage}%</p>
+                          <p className="text-[10px] font-semibold text-slate-400">Total Accuracy</p>
+                        </div>
+
+                        <button
+                          onClick={() => handleViewResults(result)}
+                          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all"
+                        >
+                          View Analysis & PDF
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
+            ) : (
+              <div className="p-12 bg-white rounded-2xl border border-slate-200 text-center">
+                <p className="text-slate-500 font-semibold text-sm">No exam attempts recorded yet.</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 4: ACHIEVEMENTS */}
+        {activeTab === 'achievements' && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight">Milestone Badges & Rewards</h2>
+              <p className="text-xs text-slate-500">Badges awarded for academic integrity and exam performance</p>
             </div>
-          )}
 
-          {/* Achievements Section */}
-          {achievements.length > 0 && (
-            <div className="mb-12">
-              <div className="flex items-center mb-8">
-                <div className="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center mr-4">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
-                  </svg>
-                </div>
-                <div>
-                  <h2 className="text-3xl font-bold text-gray-900">Your Achievements</h2>
-                  <p className="text-gray-600 mt-1">Celebrate your academic milestones</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {achievements.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {achievements.map(achievement => (
-                  <div key={achievement._id} className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-200">
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span className="text-2xl">🏆</span>
-                      </div>
-                      <h3 className="text-lg font-bold text-gray-900 mb-2">{achievement.badge.name}</h3>
-                      <p className="text-gray-600 text-sm">{achievement.badge.description}</p>
-                      <p className="text-xs text-gray-500 mt-2">
-                        Earned on {new Date(achievement.earnedAt).toLocaleDateString()}
-                      </p>
+                  <div key={achievement._id} className="bg-white rounded-2xl border border-slate-200 p-6 text-center shadow-xs">
+                    <div className="w-16 h-16 bg-gradient-to-tr from-amber-400 to-orange-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl shadow-md shadow-amber-500/20">
+                      🏆
                     </div>
+                    <h3 className="font-bold text-slate-900 text-base mb-1">{achievement.badge?.name || 'Achievement Badge'}</h3>
+                    <p className="text-slate-600 text-xs mb-3">{achievement.badge?.description || 'Earned through performance.'}</p>
+                    <span className="inline-block px-3 py-1 bg-slate-100 text-slate-500 text-[10px] font-semibold rounded-full">
+                      Earned on {new Date(achievement.earnedAt).toLocaleDateString()}
+                    </span>
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-
-          {/* Profile Section */}
-          <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-100">
-            <div className="flex items-center mb-8">
-              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mr-4">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                </svg>
+            ) : (
+              <div className="p-12 bg-white rounded-2xl border border-slate-200 text-center">
+                <p className="text-slate-500 font-semibold text-sm">No badges earned yet. Complete proctored exams to unlock rewards!</p>
               </div>
-              <div>
-                <h2 className="text-3xl font-bold text-gray-900">Profile Settings</h2>
-                <p className="text-gray-600 mt-1">Manage your account information</p>
-              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 5: PROFILE */}
+        {activeTab === 'profile' && profile && (
+          <div className="space-y-6 max-w-4xl mx-auto">
+            <div>
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight">Student Profile Settings</h2>
+              <p className="text-xs text-slate-500">Manage your institutional student profile information</p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="space-y-6">
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-xs">
+              <div className="flex items-center space-x-4 mb-8 pb-6 border-b border-slate-100">
+                <div className="w-16 h-16 bg-indigo-600 text-white rounded-2xl flex items-center justify-center font-black text-2xl shadow-lg shadow-indigo-600/20">
+                  {profile.username ? profile.username.charAt(0).toUpperCase() : 'S'}
+                </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                  <h3 className="text-xl font-bold text-slate-900">{profile.username}</h3>
+                  <p className="text-xs text-slate-500">{profile.email}</p>
+                  <span className="inline-block mt-1 px-2.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold rounded-md">
+                    Trust Score: {profile.trustScore || 100}/100
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Username</label>
                   <input
                     type="text"
-                    value={profile?.username || ''}
+                    value={profileForm.username}
                     onChange={(e) => setProfileForm({ ...profileForm, username: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                    placeholder="Enter your full name"
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Email Address</label>
                   <input
                     type="email"
                     value={profileForm.email}
                     onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                    placeholder="Enter your email"
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Student ID</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Student ID</label>
                   <input
                     type="text"
-                    value={profile?.studentId || ''}
+                    placeholder="e.g. STU-2026-88"
+                    value={profileForm.studentId}
                     onChange={(e) => setProfileForm({ ...profileForm, studentId: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                    placeholder="Enter your student ID"
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   />
                 </div>
-              </div>
 
-              <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Department</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Department</label>
                   <input
                     type="text"
-                    value={profile?.department || ''}
+                    placeholder="e.g. Computer Science"
+                    value={profileForm.department}
                     onChange={(e) => setProfileForm({ ...profileForm, department: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                    placeholder="Enter your department"
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Year</label>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Academic Year</label>
                   <select
-                    value={profile?.year || ''}
+                    value={profileForm.year}
                     onChange={(e) => setProfileForm({ ...profileForm, year: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   >
-                    <option value="">Select Year</option>
+                    <option value="">Select Academic Year</option>
                     <option value="1st Year">1st Year</option>
                     <option value="2nd Year">2nd Year</option>
                     <option value="3rd Year">3rd Year</option>
                     <option value="4th Year">4th Year</option>
                   </select>
                 </div>
+              </div>
 
-                <div className="flex space-x-4 pt-4">
-                  <button
-                    onClick={handleUpdateProfile}
-                    disabled={updatingProfile}
-                    className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {updatingProfile ? 'Saving...' : 'Save Changes'}
-                  </button>
-                  <button
-                    onClick={handleLogout}
-                    className="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white py-3 px-6 rounded-lg font-medium hover:from-red-600 hover:to-red-700 transition-all duration-200"
-                  >
-                    Logout
-                  </button>
-                </div>
+              <div className="flex justify-end space-x-3 pt-4 border-t border-slate-100">
+                <button
+                  onClick={handleUpdateProfile}
+                  disabled={updatingProfile}
+                  className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/20 transition-all disabled:opacity-50"
+                >
+                  {updatingProfile ? 'Saving Changes...' : 'Save Profile Changes'}
+                </button>
               </div>
             </div>
           </div>
-        </div>
+        )}
+
       </main>
 
-      {/* Results Modal */}
+      {/* Results & Analysis Modal */}
       {showResultsModal && (
         <ResultsModal
           result={selectedResult}
@@ -988,6 +1093,7 @@ const StudentDashboard = () => {
           }}
         />
       )}
+
     </div>
   );
 };

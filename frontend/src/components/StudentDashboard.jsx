@@ -1083,6 +1083,69 @@ const StudentDashboard = () => {
 
       </main>
 
+      {/* Student Workspace Footer */}
+      <footer className="bg-slate-900 text-slate-400 text-xs border-t border-slate-800 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            
+            {/* Brand Column */}
+            <div className="space-y-3 md:col-span-2">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-extrabold text-sm">
+                  T
+                </div>
+                <span className="text-lg font-black text-white tracking-tight">TrustExam</span>
+                <span className="px-2 py-0.5 bg-indigo-500/20 text-indigo-300 text-[10px] font-bold uppercase rounded border border-indigo-500/30">
+                  Proctored Workspace
+                </span>
+              </div>
+              <p className="text-slate-400 text-xs max-w-md leading-relaxed">
+                TrustExam provides real-time proctored online examinations, AI-generated questions, tab-switch monitoring, and automated candidate integrity verification.
+              </p>
+              <div className="flex items-center space-x-2 text-[11px] text-emerald-400 font-semibold pt-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Proctor Engine Active & Monitored</span>
+              </div>
+            </div>
+
+            {/* Navigation Column */}
+            <div className="space-y-2">
+              <p className="text-slate-200 font-bold uppercase tracking-wider text-[11px]">Quick Navigation</p>
+              <ul className="space-y-1.5 text-slate-400 font-medium">
+                <li><button onClick={() => setActiveTab('overview')} className="hover:text-white transition-colors">Dashboard Overview</button></li>
+                <li><button onClick={() => setActiveTab('exams')} className="hover:text-white transition-colors">Available Examinations</button></li>
+                <li><button onClick={() => setActiveTab('results')} className="hover:text-white transition-colors">Results & Transcripts</button></li>
+                <li><button onClick={() => setActiveTab('achievements')} className="hover:text-white transition-colors">Badges & Milestones</button></li>
+                <li><button onClick={() => setActiveTab('profile')} className="hover:text-white transition-colors">Student Profile Settings</button></li>
+              </ul>
+            </div>
+
+            {/* Security & Compliance */}
+            <div className="space-y-2">
+              <p className="text-slate-200 font-bold uppercase tracking-wider text-[11px]">Security & Compliance</p>
+              <ul className="space-y-1.5 text-slate-400 font-medium">
+                <li className="flex items-center space-x-1.5"><span>🛡️</span><span>Tab Switch Monitoring</span></li>
+                <li className="flex items-center space-x-1.5"><span>🔒</span><span>Single-Session IP Binding</span></li>
+                <li className="flex items-center space-x-1.5"><span>📊</span><span>Automated Accuracy Grading</span></li>
+                <li className="flex items-center space-x-1.5"><span>📜</span><span>PDF Certificate Export</span></li>
+              </ul>
+            </div>
+
+          </div>
+
+          {/* Bottom Bar */}
+          <div className="pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-500 text-[11px]">
+            <p>© 2026 TrustExam Platform. All rights reserved.</p>
+            <div className="flex items-center space-x-4">
+              <span>System Status: <strong className="text-emerald-400">Operational 100%</strong></span>
+              <span>•</span>
+              <span>Encrypted Session</span>
+            </div>
+          </div>
+
+        </div>
+      </footer>
+
       {/* Results & Analysis Modal */}
       {showResultsModal && (
         <ResultsModal

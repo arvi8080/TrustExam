@@ -12,6 +12,12 @@ class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     console.error('ErrorBoundary caught error:', error, errorInfo);
+    if (error?.name === 'TypeError' && error?.message?.includes('Failed to fetch dynamically imported module')) {
+      if (!sessionStorage.getItem('chunk_refreshed')) {
+        sessionStorage.setItem('chunk_refreshed', 'true');
+        window.location.reload();
+      }
+    }
   }
 
   render() {

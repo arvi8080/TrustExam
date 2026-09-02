@@ -5,9 +5,25 @@ import Login from './components/Login';
 
 import LandingPage from './components/LandingPage';
 
-const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
-const StudentDashboard = lazy(() => import('./components/StudentDashboard'));
-const Exam = lazy(() => import('./components/Exam'));
+const lazyWithRetry = (componentImport) =>
+  lazy(async () => {
+    const isRefreshed = sessionStorage.getItem('chunk_refreshed') === 'true';
+    try {
+      const component = await componentImport();
+      sessionStorage.removeItem('chunk_refreshed');
+      return component;
+    } catch (error) {
+      if (!isRefreshed) {
+        sessionStorage.setItem('chunk_refreshed', 'true');
+        window.location.reload();
+      }
+      throw error;
+    }
+  });
+
+const AdminDashboard = lazyWithRetry(() => import('./components/AdminDashboard'));
+const StudentDashboard = lazyWithRetry(() => import('./components/StudentDashboard'));
+const Exam = lazyWithRetry(() => import('./components/Exam'));
 
 function App() {
   const [authState, setAuthState] = useState({

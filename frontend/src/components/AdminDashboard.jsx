@@ -7,21 +7,21 @@ import ExamList from './admin/ExamList';
 import QuestionManagement from './admin/QuestionManagement';
 import BadgeForm from './admin/BadgeForm';
 import BadgesList from './admin/BadgesList';
-
 import StudentsTable from './admin/StudentsTable';
 import ExamSelector from './admin/ExamSelector';
 import ActiveSessionsTable from './admin/ActiveSessionsTable';
 import AnalyticsOverview from './admin/AnalyticsOverview';
 import PerformanceAnalytics from './admin/PerformanceAnalytics';
-
-
+import AuditLogsTable from './admin/AuditLogsTable';
 import ResultsTable from './admin/ResultsTable';
+
 import { useExams } from '../hooks/useExams';
 import { useResults } from '../hooks/useResults';
 import { useStudents } from '../hooks/useStudents';
 import { useBadges } from '../hooks/useBadges';
 import { useActiveSessions } from '../hooks/useActiveSessions';
 import { useQuestions } from '../hooks/useQuestions';
+import { useAuditLogs } from '../hooks/useAuditLogs';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('exams');
@@ -41,8 +41,6 @@ const AdminDashboard = () => {
     refetch: fetchExams
   } = useExams();
 
-
-
   const {
     students,
     loading: studentsLoading,
@@ -61,8 +59,6 @@ const AdminDashboard = () => {
     deleteBadge,
     refetchBadges: fetchBadges
   } = useBadges();
-
-
 
   const {
     activeSessions,
@@ -87,12 +83,19 @@ const AdminDashboard = () => {
     fetchQuestions
   } = useQuestions();
 
+  const {
+    auditLogs,
+    loading: auditLogsLoading,
+    error: auditLogsError,
+    refetch: fetchAuditLogs
+  } = useAuditLogs();
+
   useEffect(() => {
     fetchExams();
     fetchStudents();
     fetchBadges();
     fetchActiveSessions();
-    // Don't fetch questions initially - only when an exam is selected
+    fetchAuditLogs();
   }, []);
 
   const handleTabChange = (tab) => {
@@ -207,8 +210,6 @@ const AdminDashboard = () => {
     }
   };
 
-
-
   const renderTabContent = () => {
     switch (activeTab) {
       case 'exams':
@@ -248,39 +249,42 @@ const AdminDashboard = () => {
         return (
           <div className="space-y-6">
             {!selectedExamForQuestions ? (
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Question Management</h2>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Select Exam</label>
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
+                <h2 className="text-xl font-bold text-slate-900 mb-2">Question Management Pool</h2>
+                <p className="text-slate-500 text-xs mb-6">
+                  Select an exam below to view, create manually, upload CSV/Excel files, or generate questions via AI.
+                </p>
+                <div className="max-w-md">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Select Target Exam</label>
                   <select
                     value={selectedExamForQuestions || ''}
                     onChange={(e) => setSelectedExamForQuestions(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   >
-                    <option value="">Select an exam to manage questions...</option>
+                    <option value="">Choose an exam to manage questions...</option>
                     {exams.map(exam => (
                       <option key={exam._id} value={exam._id}>
-                        {exam.title}
+                        {exam.title} ({exam.questions?.length || 0} questions)
                       </option>
                     ))}
                   </select>
                 </div>
-                <p className="text-gray-600 text-sm">
-                  Select an exam above to view, add, or generate questions for that specific exam.
-                </p>
               </div>
             ) : (
               <div>
-                <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-                  <div className="flex justify-between items-center">
-                    <h2 className="text-xl font-semibold text-gray-900">
-                      Questions for: {exams.find(exam => exam._id === selectedExamForQuestions)?.title}
-                    </h2>
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600">Selected Exam</span>
+                      <h2 className="text-xl font-bold text-slate-900">
+                        {exams.find(exam => exam._id === selectedExamForQuestions)?.title}
+                      </h2>
+                    </div>
                     <button
                       onClick={() => setSelectedExamForQuestions(null)}
-                      className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                      className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all"
                     >
-                      Change Exam
+                      ← Change Exam Selection
                     </button>
                   </div>
                 </div>
@@ -314,8 +318,6 @@ const AdminDashboard = () => {
             />
           </div>
         );
-
-
 
       case 'students':
         return (
@@ -364,15 +366,12 @@ const AdminDashboard = () => {
 
       case 'audit':
         return (
-          <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Audit Logs</h2>
-            <div className="text-gray-500 text-center py-8">
-              Audit logs feature temporarily disabled (backend 500 error).
-            </div>
-          </div>
+          <AuditLogsTable
+            auditLogs={auditLogs}
+            loading={auditLogsLoading}
+            error={auditLogsError}
+          />
         );
-
-
 
       case 'results':
       case 'achievements':
@@ -398,14 +397,80 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
       <AdminHeader onLogout={handleLogout} />
-      <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+      
+      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 flex-1 w-full">
         <NavigationTabs activeTab={activeTab} onTabChange={handleTabChange} />
-        <div className="mt-6">
+        <div className="mt-8">
           {renderTabContent()}
         </div>
-      </div>
+      </main>
+
+      {/* Admin Workspace Footer */}
+      <footer className="bg-slate-900 text-slate-400 text-xs border-t border-slate-800 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            
+            {/* Brand Column */}
+            <div className="space-y-3 md:col-span-2">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-extrabold text-sm shadow-md">
+                  T
+                </div>
+                <span className="text-lg font-black text-white tracking-tight">TrustExam</span>
+                <span className="px-2 py-0.5 bg-indigo-500/20 text-indigo-300 text-[10px] font-bold uppercase rounded border border-indigo-500/30">
+                  Admin Control Console
+                </span>
+              </div>
+              <p className="text-slate-400 text-xs max-w-md leading-relaxed">
+                Centralized examination management workspace for creating proctored assessments, managing question pools, monitoring live candidate sessions, and reviewing cheating audit trails.
+              </p>
+              <div className="flex items-center space-x-2 text-[11px] text-emerald-400 font-semibold pt-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Isolated Admin Scope Active ({exams.length} Exams Managed)</span>
+              </div>
+            </div>
+
+            {/* Navigation Column */}
+            <div className="space-y-2">
+              <p className="text-slate-200 font-bold uppercase tracking-wider text-[11px]">Management Tabs</p>
+              <ul className="space-y-1.5 text-slate-400 font-medium">
+                <li><button onClick={() => handleTabChange('exams')} className="hover:text-white transition-colors">Exams Management</button></li>
+                <li><button onClick={() => handleTabChange('questions')} className="hover:text-white transition-colors">Question Pools & AI</button></li>
+                <li><button onClick={() => handleTabChange('students')} className="hover:text-white transition-colors">Student Directory</button></li>
+                <li><button onClick={() => handleTabChange('monitoring')} className="hover:text-white transition-colors">Live Proctor Session Monitoring</button></li>
+                <li><button onClick={() => handleTabChange('analytics')} className="hover:text-white transition-colors">Performance Analytics</button></li>
+                <li><button onClick={() => handleTabChange('audit')} className="hover:text-white transition-colors">Security Audit Logs</button></li>
+              </ul>
+            </div>
+
+            {/* Security Oversight */}
+            <div className="space-y-2">
+              <p className="text-slate-200 font-bold uppercase tracking-wider text-[11px]">Security & Multi-Tenancy</p>
+              <ul className="space-y-1.5 text-slate-400 font-medium">
+                <li className="flex items-center space-x-1.5"><span>🔒</span><span>Isolated Admin Data Scope</span></li>
+                <li className="flex items-center space-x-1.5"><span>🛡️</span><span>Real-Time Tab Switch Alerts</span></li>
+                <li className="flex items-center space-x-1.5"><span>📊</span><span>Automated Class Rank Calculations</span></li>
+                <li className="flex items-center space-x-1.5"><span>🤖</span><span>AI Question Generator Engine</span></li>
+              </ul>
+            </div>
+
+          </div>
+
+          {/* Bottom Bar */}
+          <div className="pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-500 text-[11px]">
+            <p>© 2026 TrustExam Platform. All rights reserved.</p>
+            <div className="flex items-center space-x-4">
+              <span>Admin Engine: <strong className="text-emerald-400">Operational 100%</strong></span>
+              <span>•</span>
+              <span>Multi-Tenant Secured</span>
+            </div>
+          </div>
+
+        </div>
+      </footer>
+
     </div>
   );
 };

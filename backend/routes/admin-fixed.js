@@ -15,10 +15,10 @@ const router = express.Router();
 router.use(auth);
 router.use(requireAdmin);
 
-// Get all exams
+// Get all exams created by this logged-in admin
 router.get('/exams', async (req, res) => {
   try {
-    const exams = await Exam.find().populate('createdBy', 'name email');
+    const exams = await Exam.find({ createdBy: req.user.id }).populate('createdBy', 'username email');
     res.json(exams);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -59,43 +59,55 @@ router.post('/exams', async (req, res) => {
   }
 });
 
-// Update exam
+// Update exam (owned by this admin)
 router.put('/exams/:examId', async (req, res) => {
   try {
-    const exam = await Exam.findByIdAndUpdate(req.params.examId, req.body, { new: true });
-    if (!exam) return res.status(404).json({ error: 'Exam not found' });
+    const exam = await Exam.findOneAndUpdate(
+      { _id: req.params.examId, createdBy: req.user.id },
+      req.body,
+      { new: true }
+    );
+    if (!exam) return res.status(404).json({ error: 'Exam not found or access denied' });
     res.json(exam);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// Update exam permissions (allowedEmails)
+// Update exam permissions (allowedEmails) (owned by this admin)
 router.put('/exams/:examId/permissions', async (req, res) => {
   try {
     const { allowedEmails } = req.body;
-    const exam = await Exam.findByIdAndUpdate(req.params.examId, { allowedEmails }, { new: true });
-    if (!exam) return res.status(404).json({ error: 'Exam not found' });
+    const exam = await Exam.findOneAndUpdate(
+      { _id: req.params.examId, createdBy: req.user.id },
+      { allowedEmails },
+      { new: true }
+    );
+    if (!exam) return res.status(404).json({ error: 'Exam not found or access denied' });
     res.json(exam);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
 
-// Delete exam
+// Delete exam (owned by this admin)
 router.delete('/exams/:examId', async (req, res) => {
   try {
-    const exam = await Exam.findByIdAndDelete(req.params.examId);
-    if (!exam) return res.status(404).json({ error: 'Exam not found' });
+    const exam = await Exam.findOneAndDelete({ _id: req.params.examId, createdBy: req.user.id });
+    if (!exam) return res.status(404).json({ error: 'Exam not found or access denied' });
+    // Also delete associated questions
+    await Question.deleteMany({ exam: req.params.examId });
     res.json({ message: 'Exam deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// Get all questions for an exam
+// Get all questions for an exam (owned by this admin)
 router.get('/exams/:examId/questions', async (req, res) => {
   try {
+    const exam = await Exam.findOne({ _id: req.params.examId, createdBy: req.user.id });
+    if (!exam) return res.status(404).json({ error: 'Exam not found or access denied' });
     const questions = await Question.find({ exam: req.params.examId });
     res.json(questions);
   } catch (error) {
@@ -103,12 +115,12 @@ router.get('/exams/:examId/questions', async (req, res) => {
   }
 });
 
-// Add single question to exam
+// Add single question to exam (owned by this admin)
 router.post('/exams/:examId/questions', async (req, res) => {
   try {
-    const exam = await Exam.findById(req.params.examId);
+    const exam = await Exam.findOne({ _id: req.params.examId, createdBy: req.user.id });
     if (!exam) {
-      return res.status(404).json({ error: 'Exam not found' });
+      return res.status(404).json({ error: 'Exam not found or access denied' });
     }
 
     const question = new Question({ ...req.body, exam: req.params.examId });
@@ -274,10 +286,12 @@ router.delete('/questions/:questionId', async (req, res) => {
   }
 });
 
-// Get all results
+// Get results for exams created by this admin
 router.get('/results', async (req, res) => {
   try {
-    const results = await Result.find().populate('student exam');
+    const myExams = await Exam.find({ createdBy: req.user.id }).select('_id');
+    const examIds = myExams.map(e => e._id);
+    const results = await Result.find({ exam: { $in: examIds } }).populate('student exam');
     res.json(results);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -414,13 +428,13 @@ router.get('/students/:studentId/exam-history', async (req, res) => {
 // Start exam
 router.patch('/exams/:examId/start', async (req, res) => {
   try {
-    const exam = await Exam.findByIdAndUpdate(
-      req.params.examId,
+    const exam = await Exam.findOneAndUpdate(
+      { _id: req.params.examId, createdBy: req.user.id },
       { isActive: true, status: 'active' },
       { new: true }
     );
 
-    if (!exam) return res.status(404).json({ error: 'Exam not found' });
+    if (!exam) return res.status(404).json({ error: 'Exam not found or access denied' });
 
     res.json({ message: 'Exam started successfully', exam });
   } catch (error) {
@@ -431,13 +445,13 @@ router.patch('/exams/:examId/start', async (req, res) => {
 // Stop exam
 router.patch('/exams/:examId/stop', async (req, res) => {
   try {
-    const exam = await Exam.findByIdAndUpdate(
-      req.params.examId,
+    const exam = await Exam.findOneAndUpdate(
+      { _id: req.params.examId, createdBy: req.user.id },
       { isActive: false, status: 'completed' },
       { new: true }
     );
 
-    if (!exam) return res.status(404).json({ error: 'Exam not found' });
+    if (!exam) return res.status(404).json({ error: 'Exam not found or access denied' });
 
     // Auto-submit all active results
     await Result.updateMany(
@@ -455,11 +469,11 @@ router.patch('/exams/:examId/stop', async (req, res) => {
 router.patch('/exams/:examId/extend', async (req, res) => {
   try {
     const { additionalMinutes } = req.body;
-    const exam = await Exam.findById(req.params.examId);
+    const exam = await Exam.findOne({ _id: req.params.examId, createdBy: req.user.id });
 
-    if (!exam) return res.status(404).json({ error: 'Exam not found' });
+    if (!exam) return res.status(404).json({ error: 'Exam not found or access denied' });
 
-    exam.endTime = new Date(exam.endTime.getTime() + additionalMinutes * 60000);
+    exam.endTime = new Date((exam.endTime || new Date()).getTime() + additionalMinutes * 60000);
     await exam.save();
 
     res.json({ message: `Exam extended by ${additionalMinutes} minutes`, exam });
@@ -739,10 +753,13 @@ router.get('/audit-logs', async (req, res) => {
       });
     });
 
-    // Exam submissions (safe)
+    // Exam submissions for this admin's exams (safe)
     let recentSubmissions = [];
     try {
-      recentSubmissions = await Result.find({ isCompleted: true })
+      const myExams = await Exam.find({ createdBy: req.user.id }).select('_id');
+      const examIds = myExams.map(e => e._id);
+
+      recentSubmissions = await Result.find({ exam: { $in: examIds }, isCompleted: true })
         .populate('student', 'username email')
         .populate('exam', 'title')
         .select('submittedAt')

@@ -14,7 +14,7 @@ const ActionButtons = ({
   setShowBadgeForm
 }) => {
   return (
-    <div className="mb-6 flex space-x-4">
+    <div className="flex items-center space-x-3 mb-6">
       {activeTab === 'exams' && (
         <button
           onClick={() => {
@@ -28,18 +28,26 @@ const ActionButtons = ({
               }
             }
           }}
-          className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition duration-200"
+          className={`px-5 py-2.5 rounded-xl font-bold text-xs transition-all duration-200 flex items-center space-x-2 shadow-md ${
+            showCreateForm || showEditForm
+              ? 'bg-slate-200 text-slate-800 hover:bg-slate-300'
+              : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-600/20'
+          }`}
         >
-          {showCreateForm || showEditForm ? 'Cancel' : 'Create New Exam'}
+          <span>{showCreateForm || showEditForm ? '✕ Cancel' : '➕ Create New Exam'}</span>
         </button>
       )}
 
       {activeTab === 'badges' && (
         <button
           onClick={() => setShowBadgeForm(!showBadgeForm)}
-          className="bg-yellow-600 text-white px-6 py-3 rounded-md hover:bg-yellow-700 transition duration-200"
+          className={`px-5 py-2.5 rounded-xl font-bold text-xs transition-all duration-200 flex items-center space-x-2 shadow-md ${
+            showBadgeForm
+              ? 'bg-slate-200 text-slate-800 hover:bg-slate-300'
+              : 'bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/20'
+          }`}
         >
-          {showBadgeForm ? 'Cancel' : 'Create New Badge'}
+          <span>{showBadgeForm ? '✕ Cancel' : '🏆 Create New Badge'}</span>
         </button>
       )}
     </div>

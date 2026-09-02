@@ -335,10 +335,25 @@ router.post('/exams/:examId/invite', async (req, res) => {
 
 // ===== STUDENT MANAGEMENT =====
 
-// Get all students
+// Get students for logged-in admin ONLY
 router.get('/students', async (req, res) => {
   try {
-    const students = await User.find({ role: 'student' }).select('-password');
+    const myExams = await Exam.find({ createdBy: req.user.id }).select('_id allowedEmails');
+    const myExamIds = myExams.map(e => e._id);
+    const myAllowedEmails = myExams.flatMap(e => e.allowedEmails || []).map(email => (email || '').toLowerCase());
+
+    const results = await Result.find({ exam: { $in: myExamIds } }).select('student');
+    const studentIdsFromResults = results.map(r => r.student);
+
+    const students = await User.find({
+      role: 'student',
+      $or: [
+        { createdBy: req.user.id },
+        { _id: { $in: studentIdsFromResults } },
+        { email: { $in: myAllowedEmails } }
+      ]
+    }).select('-password');
+
     res.json(students);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -361,7 +376,8 @@ router.post('/students/bulk', async (req, res) => {
           username,
           email,
           password: hashedPassword,
-          role: 'student'
+          role: 'student',
+          createdBy: req.user.id
         });
         await student.save();
         const studentResponse = student.toObject();
@@ -411,10 +427,13 @@ router.patch('/students/:studentId/block', async (req, res) => {
   }
 });
 
-// Get student exam history
+// Get student exam history (for this admin's exams only)
 router.get('/students/:studentId/exam-history', async (req, res) => {
   try {
-    const results = await Result.find({ student: req.params.studentId })
+    const myExams = await Exam.find({ createdBy: req.user.id }).select('_id');
+    const myExamIds = myExams.map(e => e._id);
+
+    const results = await Result.find({ student: req.params.studentId, exam: { $in: myExamIds } })
       .populate('exam', 'title startTime endTime totalMarks')
       .sort({ submittedAt: -1 });
     res.json(results);
